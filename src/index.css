@@ -78,66 +78,67 @@
   }
 
   .dark {
-    /* Pure monochrome — black ink on black vellum */
-    --background: 0 0% 4%;
-    --foreground: 0 0% 96%;
+    /* Candlelit vellum — aged dark leather with muted gilding & wine */
+    --background: 28 12% 5%;
+    --foreground: 39 28% 90%;
 
-    --parchment: 0 0% 8%;
-    --parchment-dark: 0 0% 12%;
-    --parchment-light: 0 0% 10%;
+    --parchment: 28 14% 8%;
+    --parchment-dark: 28 12% 12%;
+    --parchment-light: 30 14% 10%;
 
-    --ink: 0 0% 96%;
-    --ink-faded: 0 0% 65%;
+    --ink: 39 28% 92%;
+    --ink-faded: 35 18% 62%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 96%;
+    --card: 28 14% 8%;
+    --card-foreground: 39 28% 92%;
 
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 28 14% 8%;
+    --popover-foreground: 39 28% 92%;
 
-    --primary: 0 0% 96%;
-    --primary-foreground: 0 0% 4%;
-    --gold: 0 0% 90%;
-    --gold-deep: 0 0% 70%;
-    --gold-pale: 0 0% 96%;
+    --primary: 42 55% 65%;
+    --primary-foreground: 28 20% 8%;
+    --gold: 42 60% 68%;
+    --gold-deep: 38 50% 52%;
+    --gold-pale: 45 55% 82%;
 
-    --secondary: 0 0% 100%;
-    --secondary-foreground: 0 0% 4%;
-    --crimson: 0 0% 96%;
-    --crimson-deep: 0 0% 100%;
+    --secondary: 358 45% 55%;
+    --secondary-foreground: 28 20% 8%;
+    --crimson: 8 55% 60%;
+    --crimson-deep: 12 55% 70%;
 
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 28 12% 14%;
+    --muted-foreground: 35 15% 60%;
 
-    --accent: 0 0% 96%;
-    --accent-foreground: 0 0% 4%;
-    --forest: 0 0% 80%;
+    --accent: 142 28% 48%;
+    --accent-foreground: 28 20% 8%;
+    --forest: 142 32% 52%;
 
-    --destructive: 0 0% 100%;
-    --destructive-foreground: 0 0% 4%;
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 28 20% 8%;
 
-    --border: 0 0% 35%;
-    --input: 0 0% 12%;
-    --ring: 0 0% 96%;
+    --border: 30 15% 22%;
+    --input: 28 12% 12%;
+    --ring: 42 55% 65%;
 
-    --gradient-parchment: linear-gradient(180deg, hsl(0 0% 6%), hsl(0 0% 4%));
-    --gradient-gold: linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 70%));
-    --gradient-wine: linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 80%));
-    --gradient-vignette: radial-gradient(ellipse at center, transparent 40%, hsl(0 0% 0% / 0.6) 100%);
+    --gradient-parchment: radial-gradient(ellipse at top, hsl(30 16% 11%), hsl(28 12% 5%));
+    --gradient-gold: linear-gradient(135deg, hsl(42 60% 68%), hsl(38 50% 52%));
+    --gradient-wine: linear-gradient(135deg, hsl(8 55% 30%), hsl(12 55% 18%));
+    --gradient-vignette: radial-gradient(ellipse at center, transparent 30%, hsl(0 0% 0% / 0.7) 100%);
 
-    --shadow-manuscript: 0 10px 40px -10px hsl(0 0% 0% / 0.8), inset 0 0 60px hsl(0 0% 0% / 0.5);
-    --shadow-gilded: 0 4px 20px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15);
+    --shadow-manuscript: 0 10px 40px -10px hsl(0 0% 0% / 0.8), inset 0 0 80px hsl(28 15% 2% / 0.6);
+    --shadow-gilded: 0 4px 20px hsl(0 0% 0% / 0.7), inset 0 1px 0 hsl(45 55% 80% / 0.25);
     --shadow-deep: 0 20px 60px -15px hsl(0 0% 0% / 0.95);
 
     --paper-texture:
-      repeating-radial-gradient(circle at 23% 17%, hsl(0 0% 100% / 0.025) 0px, transparent 2px),
-      repeating-radial-gradient(circle at 77% 63%, hsl(0 0% 100% / 0.02) 0px, transparent 3px),
-      repeating-linear-gradient(45deg, hsl(0 0% 100% / 0.015) 0 1px, transparent 1px 4px);
+      repeating-radial-gradient(circle at 23% 17%, hsl(42 40% 40% / 0.05) 0px, transparent 2px),
+      repeating-radial-gradient(circle at 77% 63%, hsl(38 30% 35% / 0.04) 0px, transparent 3px),
+      repeating-linear-gradient(45deg, hsl(42 40% 55% / 0.022) 0 1px, transparent 1px 4px);
 
     --body-bg:
       var(--paper-texture),
-      radial-gradient(ellipse at top, hsl(0 0% 8%) 0%, transparent 60%),
-      linear-gradient(180deg, hsl(0 0% 4%), hsl(0 0% 2%));
+      radial-gradient(ellipse at top, hsl(30 18% 10%) 0%, transparent 55%),
+      radial-gradient(ellipse at bottom right, hsl(28 14% 6%) 0%, transparent 70%),
+      linear-gradient(180deg, hsl(28 12% 5%), hsl(28 14% 3%));
   }
 }
 
@@ -242,6 +243,35 @@
     flex: 1;
     height: 1px;
     background: linear-gradient(90deg, transparent, hsl(var(--gold-deep) / 0.6), transparent);
+  }
+
+  .fleuron-rule {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    color: hsl(var(--gold-deep));
+    font-size: 0.9rem;
+    line-height: 1;
+  }
+  .fleuron-rule::before,
+  .fleuron-rule::after {
+    content: '';
+    flex: 1;
+    height: 3px;
+    border-top: 1px solid hsl(var(--gold-deep) / 0.45);
+    border-bottom: 1px solid hsl(var(--gold-deep) / 0.25);
+  }
+
+  .dateline-strip {
+    background: hsl(var(--ink));
+    color: hsl(var(--gold-pale));
+    border-bottom: 1px solid hsl(var(--ink));
+  }
+  .dark .dateline-strip {
+    background: hsl(var(--parchment-dark));
+    color: hsl(var(--gold-pale));
+    border-bottom: 1px solid hsl(var(--gold-deep) / 0.3);
   }
 
   .btn-ink {

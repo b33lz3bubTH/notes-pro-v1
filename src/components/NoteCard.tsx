@@ -60,9 +60,9 @@ export const NoteCard = ({
       title="Click to open · double-click or middle-click to open in new tab"
     >
       {/* Top dateline strip */}
-      <div className="flex items-center justify-between px-3 py-1 bg-ink text-gold-pale text-[10px] uppercase tracking-[0.2em]">
+      <div className="dateline-strip flex items-center justify-between px-3 py-1 text-[10px] uppercase tracking-[0.2em]">
         <span className="flex items-center gap-1.5">
-          <span className="w-1 h-1 rounded-full bg-crimson" />
+          <span className="w-1 h-1 rounded-full bg-gold-pale/80" />
           {fmtDate(note.updatedAt)} · {fmtTime(note.updatedAt)}
         </span>
         <button

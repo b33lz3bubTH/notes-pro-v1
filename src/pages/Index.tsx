@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { deleteNote, listNotes, type Note } from "@/lib/db";
 import { NoteCard } from "@/components/NoteCard";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Plus, Search, Shield, Scroll, Feather, Sun, Moon } from "lucide-react";
+import { Plus, Search, Shield, Scroll, Feather, Sun, Moon, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { lockVault } from "@/lib/vault";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
@@ -81,10 +82,10 @@ const Index = () => {
   const dateStr = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]}`;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       {/* Newspaper masthead */}
-      <header className="border-b-4 border-double border-ink/70">
-        <div className="container max-w-7xl mx-auto px-4 pt-4 pb-2">
+      <header>
+        <div className="container max-w-5xl mx-auto px-6 md:px-10 pt-4 pb-2 border-b-4 border-double border-ink/70">
           {/* Top strip: date | fortune | theme toggle */}
           <div className="flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-widest text-ink-faded border-b border-ink/30 pb-2 mb-3">
             <span className="flex items-center gap-1.5">
@@ -92,9 +93,19 @@ const Index = () => {
               {period.label} · {dateStr}
             </span>
             <span className="hidden md:inline italic body-text normal-case tracking-normal text-sm text-crimson">
-              "{fortune}"
+              &ldquo;{fortune}&rdquo;
             </span>
-            <ThemeToggle />
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => lockVault()}
+                className="w-8 h-8 rounded-full border border-ink/30 flex items-center justify-center text-ink-faded hover:text-crimson hover:border-crimson transition"
+                aria-label="Re-seal the codex"
+                title="Re-seal the codex"
+              >
+                <Lock className="w-3.5 h-3.5" />
+              </button>
+              <ThemeToggle />
+            </div>
           </div>
 
           {/* Title block */}
@@ -108,12 +119,15 @@ const Index = () => {
               The Scribe's Codex
             </h1>
             <div className="flex items-center justify-center gap-3 mt-2 text-[10px] uppercase tracking-[0.35em] text-ink-faded">
-              <span className="flex-1 h-px bg-ink/40" />
+              <span className="flex-1 h-px bg-gradient-to-r from-transparent via-gold-deep/60 to-transparent" />
               <span className="flex items-center gap-1.5">
                 <Shield className="w-3 h-3 text-forest" />
                 Privatus · Offline · Sealed by Browser
               </span>
-              <span className="flex-1 h-px bg-ink/40" />
+              <span className="flex-1 h-px bg-gradient-to-r from-transparent via-gold-deep/60 to-transparent" />
+            </div>
+            <div className="fleuron-rule mt-3 text-gold-deep/80">
+              <span aria-hidden>&#10086;</span>
             </div>
           </div>
 
@@ -129,8 +143,8 @@ const Index = () => {
       </header>
 
       {/* Toolbar */}
-      <div className="border-b-2 border-ink/40 bg-parchment-dark/30">
-        <div className="container max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row gap-2 items-stretch">
+      <div>
+        <div className="container max-w-5xl mx-auto px-6 md:px-10 py-3 flex flex-col sm:flex-row gap-2 items-stretch border-b-2 border-ink/40 bg-parchment-dark/30">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faded pointer-events-none" />
             <input
@@ -152,14 +166,20 @@ const Index = () => {
       </div>
 
       {/* Notes grid */}
-      <main className="container max-w-7xl mx-auto px-4 py-5">
-        <div className="flex items-end justify-between border-b-2 border-ink/40 pb-1 mb-4">
-          <h2 className="blackletter text-2xl md:text-3xl text-ink leading-none">
-            {query ? "Search Results" : "Today's Chronicle"}
-          </h2>
-          <span className="text-[10px] uppercase tracking-[0.3em] text-ink-faded pb-1">
-            {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
-          </span>
+      <main className="container max-w-5xl mx-auto px-6 md:px-10 py-6 flex-1 w-full">
+        <div className="mb-4">
+          <div className="flex items-end justify-between pb-2 border-b border-double border-gold-deep/50">
+            <h2 className="blackletter text-2xl md:text-3xl text-ink leading-none flex items-baseline gap-3">
+              <span className="text-gold-deep text-xl leading-none" aria-hidden>&#10087;</span>
+              {query ? "Search Results" : "Today's Chronicle"}
+            </h2>
+            <span className="text-[10px] uppercase tracking-[0.3em] text-ink-faded pb-1">
+              {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
+            </span>
+          </div>
+          <div className="fleuron-rule mt-2 text-gold-deep/70">
+            <span aria-hidden>&#10086;</span>
+          </div>
         </div>
 
         {loading ? (
@@ -172,10 +192,13 @@ const Index = () => {
             <h3 className="text-2xl text-ink">
               {query ? "No scroll matcheth thy query" : "Thy codex lieth empty"}
             </h3>
-            <p className="italic text-ink-faded body-text">
+            <div className="fleuron-rule text-gold-deep/60 max-w-[12rem] mx-auto">
+              <span aria-hidden>&#10086;</span>
+            </div>
+            <p className="italic text-ink-faded body-text drop-cap text-left">
               {query
-                ? "Seek with different words, good scribe."
-                : "Take up thy quill and inscribe thy first thought."}
+                ? "Seek with different words, good scribe — perhaps thy memory hath played thee false."
+                : "Take up thy quill and inscribe thy first thought. Every codex beginneth with a single stroke of ink upon blank vellum."}
             </p>
             {!query && (
               <button
@@ -188,7 +211,7 @@ const Index = () => {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {filtered.map((n) => (
               <NoteCard
                 key={n.id}
@@ -200,8 +223,8 @@ const Index = () => {
         )}
       </main>
 
-      <footer className="border-t-4 border-double border-ink/70 mt-6">
-        <div className="container max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.3em] text-ink-faded">
+      <footer className="mt-auto">
+        <div className="container max-w-5xl mx-auto px-6 md:px-10 py-3 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.3em] text-ink-faded border-t-4 border-double border-ink/70">
           <span>Printed by Quill &amp; Candlelight</span>
           <span className="text-crimson">· Soli Deo Gloria ·</span>
           <span>Stored within thy Browser</span>

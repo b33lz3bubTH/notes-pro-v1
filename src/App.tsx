@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import NoteEditorPage from "./pages/NoteEditorPage.tsx";
+import { VaultGate } from "./components/VaultGate";
 
 const queryClient = new QueryClient();
 
@@ -14,15 +15,17 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/note/new" element={<NoteEditorPage />} />
-          <Route path="/note/:id" element={<NoteEditorPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <VaultGate>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/note/new" element={<NoteEditorPage />} />
+            <Route path="/note/:id" element={<NoteEditorPage />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </VaultGate>
     </TooltipProvider>
   </QueryClientProvider>
 );
