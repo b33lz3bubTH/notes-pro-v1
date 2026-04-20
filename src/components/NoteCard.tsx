@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { getMediaMany, type Note, type MediaAttachment } from "@/lib/db";
-import { Trash2, Image as ImageIcon, Music, Film, Paperclip } from "lucide-react";
+import { Trash2, Image as ImageIcon, Music, Film, Paperclip, Quote } from "lucide-react";
 
+const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const fmtDate = (t: number) => {
   const d = new Date(t);
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
 };
 const fmtTime = (t: number) =>
-  new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+
+const wordCount = (s: string) => (s.trim() ? s.trim().split(/\s+/).length : 0);
 
 export const NoteCard = ({
   note,
@@ -22,7 +25,11 @@ export const NoteCard = ({
   const [counts, setCounts] = useState({ img: 0, vid: 0, aud: 0, other: 0 });
 
   useEffect(() => {
-    if (!note.mediaIds.length) return;
+    if (!note.mediaIds.length) {
+      setPreview("");
+      setCounts({ img: 0, vid: 0, aud: 0, other: 0 });
+      return;
+    }
     let revoked: string | null = null;
     getMediaMany(note.mediaIds).then((m: MediaAttachment[]) => {
       const c = { img: 0, vid: 0, aud: 0, other: 0 };
@@ -43,34 +50,64 @@ export const NoteCard = ({
     return () => { if (revoked) URL.revokeObjectURL(revoked); };
   }, [note.mediaIds]);
 
+  const wc = wordCount(note.body);
+  const totalRelics = note.mediaIds.length;
+
   return (
     <article
       onClick={onOpen}
-      className="note-card parchment relative rounded-sm cursor-pointer overflow-hidden group border border-ink/30"
+      className="group relative cursor-pointer bg-parchment-light/70 border border-ink/40 rounded-[2px] overflow-hidden hover:border-crimson hover:shadow-[0_8px_24px_-8px_hsl(25_40%_12%/0.5)] hover:-translate-y-0.5 transition-all duration-200"
+      style={{
+        backgroundImage: "var(--paper-texture)",
+      }}
     >
-      <button
-        onClick={(e) => { e.stopPropagation(); onDelete(); }}
-        className="absolute top-1.5 right-1.5 z-10 w-6 h-6 rounded-full bg-crimson-deep/95 text-gold-pale border border-gold-deep flex items-center justify-center opacity-0 group-hover:opacity-100 transition hover:scale-110"
-        aria-label="Burn this scroll"
-      >
-        <Trash2 className="w-3 h-3" />
-      </button>
+      {/* Top dateline strip — like a newspaper byline */}
+      <div className="flex items-center justify-between px-3 py-1 bg-ink text-gold-pale text-[10px] uppercase tracking-[0.2em]">
+        <span className="flex items-center gap-1.5">
+          <span className="w-1 h-1 rounded-full bg-crimson" />
+          {fmtDate(note.updatedAt)} · {fmtTime(note.updatedAt)}
+        </span>
+        <button
+          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          className="opacity-60 hover:opacity-100 hover:text-crimson transition"
+          aria-label="Delete scroll"
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
+      </div>
 
+      {/* Preview image (if any) */}
       {preview && (
-        <div className="relative h-24 overflow-hidden border-b border-ink/40">
-          <img src={preview} alt="" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/40 to-transparent" />
+        <div className="relative h-28 overflow-hidden border-b border-ink/40">
+          <img src={preview} alt="" className="w-full h-full object-cover sepia-[0.25] contrast-105" />
+          <div className="absolute inset-0 bg-gradient-to-t from-parchment-light/60 via-transparent to-transparent" />
         </div>
       )}
 
-      <div className="relative p-3 space-y-1.5">
-        {/* Dateline */}
-        <div className="flex items-center gap-1.5 text-[9px] font-display uppercase tracking-[0.2em] text-crimson border-b border-ink/30 pb-1">
-          <span>{fmtDate(note.updatedAt)}</span>
-          <span className="text-ink-faded">·</span>
-          <span className="text-ink-faded">{fmtTime(note.updatedAt)}</span>
-          {note.mediaIds.length > 0 && (
-            <span className="ml-auto flex items-center gap-1.5 text-ink-faded">
+      {/* Content */}
+      <div className="p-3 space-y-2">
+        <h3 className="text-base leading-tight text-ink font-semibold line-clamp-2 tracking-wide">
+          {note.title}
+        </h3>
+
+        {note.body ? (
+          <div className="relative pl-3 border-l-2 border-crimson/50">
+            <Quote className="absolute -left-1 -top-1 w-2.5 h-2.5 text-crimson bg-parchment-light" />
+            <p className="text-[13px] leading-snug text-ink-faded italic line-clamp-3 body-text">
+              {note.body}
+            </p>
+          </div>
+        ) : (
+          <p className="text-[12px] italic text-ink-faded/60 body-text">
+            — no inscription —
+          </p>
+        )}
+
+        {/* Footer meta */}
+        <div className="flex items-center justify-between pt-1.5 border-t border-dashed border-ink/30 text-[10px] uppercase tracking-[0.15em] text-ink-faded">
+          <span>{wc} {wc === 1 ? "word" : "words"}</span>
+          {totalRelics > 0 && (
+            <span className="flex items-center gap-1.5 text-crimson">
               {counts.img > 0 && <span className="flex items-center gap-0.5"><ImageIcon className="w-2.5 h-2.5" />{counts.img}</span>}
               {counts.vid > 0 && <span className="flex items-center gap-0.5"><Film className="w-2.5 h-2.5" />{counts.vid}</span>}
               {counts.aud > 0 && <span className="flex items-center gap-0.5"><Music className="w-2.5 h-2.5" />{counts.aud}</span>}
@@ -78,16 +115,6 @@ export const NoteCard = ({
             </span>
           )}
         </div>
-
-        <h3 className="font-display text-base text-ink leading-tight line-clamp-2 pr-6">
-          {note.title}
-        </h3>
-
-        {note.body && (
-          <p className="text-ink-faded leading-snug text-sm line-clamp-3 italic">
-            {note.body}
-          </p>
-        )}
       </div>
     </article>
   );

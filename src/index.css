@@ -85,7 +85,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-serif;
+    @apply bg-background text-foreground;
     background-image:
       var(--paper-texture),
       radial-gradient(ellipse at top left, hsl(42 55% 90%) 0%, transparent 50%),
@@ -93,15 +93,28 @@
       linear-gradient(180deg, hsl(39 42% 84%), hsl(35 35% 76%));
     background-attachment: fixed;
     font-family: 'Cormorant Garamond', 'Garamond', serif;
+    font-size: 16px;
   }
 
-  h1, h2, h3, h4, .display {
+  /* Headings & UI labels — Cinzel everywhere for consistency */
+  h1, h2, h3, h4, h5, h6, .display, label, button, input, textarea, select {
     font-family: 'Cinzel', 'Trajan Pro', serif;
-    letter-spacing: 0.02em;
   }
 
+  /* Body prose uses Cormorant */
+  p, .prose, .body-text {
+    font-family: 'Cormorant Garamond', 'Garamond', serif;
+  }
+
+  /* Blackletter reserved ONLY for the masthead title */
   .blackletter {
     font-family: 'UnifrakturMaguntia', 'Old English Text MT', serif;
+    letter-spacing: 0.01em;
+  }
+
+  input::placeholder, textarea::placeholder {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
   }
 }
 
