@@ -2,9 +2,36 @@ import { useEffect, useMemo, useState } from "react";
 import { deleteNote, listNotes, type Note } from "@/lib/db";
 import { NoteCard } from "@/components/NoteCard";
 import { NoteEditor } from "@/components/NoteEditor";
-import { Ornament, FleurDeLis } from "@/components/Ornament";
-import { Plus, Search, Shield, Scroll } from "lucide-react";
+import { Plus, Search, Shield, Scroll, Feather, Cloud, Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
+
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+const toRoman = (num: number): string => {
+  const map: [number, string][] = [
+    [1000, "M"], [900, "CM"], [500, "D"], [400, "CD"],
+    [100, "C"], [90, "XC"], [50, "L"], [40, "XL"],
+    [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"],
+  ];
+  let r = "";
+  for (const [v, s] of map) {
+    while (num >= v) { r += s; num -= v; }
+  }
+  return r;
+};
+
+const fortunes = [
+  "A raven brings tidings from distant shores.",
+  "Beware the ides — but rejoice in thy ink.",
+  "He who inscribeth wisely, remembereth long.",
+  "The quill is mightier than the broadsword.",
+  "Fortune favours the diligent scribe.",
+  "By candlelight, truth findeth its parchment.",
+];
 
 const Index = () => {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -12,6 +39,7 @@ const Index = () => {
   const [editing, setEditing] = useState<Note | null>(null);
   const [creating, setCreating] = useState(false);
   const [query, setQuery] = useState("");
+  const [now, setNow] = useState(new Date());
 
   const refresh = async () => {
     setLoading(true);
@@ -22,14 +50,15 @@ const Index = () => {
 
   useEffect(() => {
     refresh();
+    const t = setInterval(() => setNow(new Date()), 1000 * 30);
+    return () => clearInterval(t);
   }, []);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return notes;
     return notes.filter(
-      (n) =>
-        n.title.toLowerCase().includes(q) || n.body.toLowerCase().includes(q),
+      (n) => n.title.toLowerCase().includes(q) || n.body.toLowerCase().includes(q),
     );
   }, [notes, query]);
 
@@ -40,70 +69,128 @@ const Index = () => {
     refresh();
   };
 
+  const stats = useMemo(() => {
+    const totalMedia = notes.reduce((acc, n) => acc + n.mediaIds.length, 0);
+    const words = notes.reduce(
+      (acc, n) => acc + (n.body.trim() ? n.body.trim().split(/\s+/).length : 0), 0,
+    );
+    const today = new Date().setHours(0, 0, 0, 0);
+    const todayCount = notes.filter((n) => n.updatedAt >= today).length;
+    return { totalMedia, words, todayCount };
+  }, [notes]);
+
+  const fortune = useMemo(
+    () => fortunes[now.getDate() % fortunes.length],
+    [now],
+  );
+  const hour = now.getHours();
+  const period =
+    hour < 6 ? { label: "Matins", icon: Moon }
+    : hour < 12 ? { label: "Prime", icon: Sun }
+    : hour < 18 ? { label: "Sext", icon: Sun }
+    : { label: "Vespers", icon: Moon };
+  const PeriodIcon = period.icon;
+
+  const dateStr = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]}`;
+  const yearRoman = toRoman(now.getFullYear());
+
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="relative border-b-2 border-gold-deep/40 bg-gradient-to-b from-ink/8 to-transparent">
-        <div className="container max-w-7xl mx-auto px-6 py-12 text-center space-y-4">
-          <div className="flex items-center justify-center gap-4 text-crimson">
-            <FleurDeLis className="w-8 h-8" />
-            <div className="wax-seal animate-seal">
-              <Scroll className="w-6 h-6" />
-            </div>
-            <FleurDeLis className="w-8 h-8" />
+      {/* Newspaper masthead */}
+      <header className="border-b-4 border-double border-ink/70">
+        <div className="container max-w-7xl mx-auto px-4 pt-4 pb-2">
+          {/* Top strip: date | weather | fortune */}
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-display uppercase tracking-widest text-ink-faded border-b border-ink/30 pb-2 mb-3">
+            <span className="flex items-center gap-1.5">
+              <PeriodIcon className="w-3.5 h-3.5" />
+              {period.label} · {dateStr}
+            </span>
+            <span className="hidden md:inline italic font-serif normal-case tracking-normal text-sm text-crimson">
+              "{fortune}"
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Cloud className="w-3.5 h-3.5" />
+              Anno Domini {yearRoman}
+            </span>
           </div>
-          <h1 className="blackletter text-6xl md:text-7xl text-ink leading-none tracking-wide">
-            The Scribe's Codex
-          </h1>
-          <p className="font-display text-sm md:text-base uppercase tracking-[0.4em] text-ink-faded">
-            A Private Repository of Thoughts &amp; Relics
-          </p>
-          <Ornament className="max-w-xl mx-auto" />
-          <p className="font-serif italic text-ink-faded max-w-2xl mx-auto text-lg flex items-center justify-center gap-2">
-            <Shield className="w-4 h-4 text-forest" />
-            Thy words remain within thine own vault — sealed by browser, seen by none
-          </p>
+
+          {/* Title block */}
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-3 text-crimson text-[10px] font-display uppercase tracking-[0.4em] mb-1">
+              <span>· Vol. I ·</span>
+              <span>No. {notes.length || "I"}</span>
+              <span>· Est. MMXXV ·</span>
+            </div>
+            <h1 className="blackletter text-5xl md:text-7xl text-ink leading-none">
+              The Scribe's Codex
+            </h1>
+            <div className="flex items-center justify-center gap-3 mt-2 text-[10px] font-display uppercase tracking-[0.35em] text-ink-faded">
+              <span className="flex-1 h-px bg-ink/40" />
+              <span className="flex items-center gap-1.5">
+                <Shield className="w-3 h-3 text-forest" />
+                Privatus · Offline · Sealed by Browser
+              </span>
+              <span className="flex-1 h-px bg-ink/40" />
+            </div>
+          </div>
+
+          {/* Stats bar */}
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-px mt-3 bg-ink/30 border border-ink/30 text-center">
+            <Stat label="Scrolls" value={notes.length} />
+            <Stat label="Words" value={stats.words.toLocaleString()} />
+            <Stat label="Relics" value={stats.totalMedia} />
+            <Stat label="This Day" value={stats.todayCount} />
+            <Stat label="Hour" value={now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} />
+          </div>
         </div>
       </header>
 
       {/* Toolbar */}
-      <div className="container max-w-7xl mx-auto px-6 py-8">
-        <div className="gilded-frame flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
-          <div className="relative flex-1 max-w-xl">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-faded pointer-events-none" />
+      <div className="border-b-2 border-ink/40 bg-parchment-dark/30">
+        <div className="container max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row gap-2 items-stretch">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faded pointer-events-none" />
             <input
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Seek among the scrolls..."
-              className="w-full bg-parchment-light/80 border-2 border-gold-deep/50 rounded-sm pl-11 pr-4 py-3 text-lg font-serif text-ink placeholder:text-ink-faded/60 focus:outline-none focus:border-crimson"
+              className="w-full bg-parchment-light/80 border border-ink/40 rounded-sm pl-9 pr-3 py-2 font-serif text-ink placeholder:text-ink-faded/60 focus:outline-none focus:border-crimson"
             />
           </div>
           <button
             onClick={() => setCreating(true)}
-            className="btn-ink px-6 py-3 rounded-sm flex items-center justify-center gap-2 whitespace-nowrap"
+            className="btn-ink px-5 py-2 rounded-sm flex items-center justify-center gap-2 text-sm whitespace-nowrap"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-4 h-4" />
             New Scroll
           </button>
         </div>
       </div>
 
       {/* Notes grid */}
-      <main className="container max-w-7xl mx-auto px-6 pb-20">
+      <main className="container max-w-7xl mx-auto px-4 py-5">
+        {/* Section heading */}
+        <div className="flex items-end justify-between border-b-2 border-ink/40 pb-1 mb-4">
+          <h2 className="blackletter text-2xl md:text-3xl text-ink leading-none">
+            {query ? "Search Results" : "Today's Chronicle"}
+          </h2>
+          <span className="font-display text-[10px] uppercase tracking-[0.3em] text-ink-faded pb-1">
+            {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
+          </span>
+        </div>
+
         {loading ? (
-          <p className="text-center font-display tracking-widest text-ink-faded py-20">
+          <p className="text-center font-display tracking-widest text-ink-faded py-16 text-sm">
             Unfurling thy scrolls...
           </p>
         ) : filtered.length === 0 ? (
-          <div className="parchment max-w-2xl mx-auto rounded-sm p-12 text-center space-y-6 relative">
-            <div className="flex justify-center">
-              <Scroll className="w-16 h-16 text-crimson/70" />
-            </div>
-            <h2 className="font-display text-3xl text-ink">
-              {query ? "No scroll matches thy query" : "Thy codex lies empty"}
-            </h2>
-            <p className="font-serif text-lg italic text-ink-faded">
+          <div className="parchment max-w-xl mx-auto rounded-sm p-8 text-center space-y-4 relative">
+            <Scroll className="w-12 h-12 text-crimson/70 mx-auto" />
+            <h3 className="font-display text-2xl text-ink">
+              {query ? "No scroll matcheth thy query" : "Thy codex lieth empty"}
+            </h3>
+            <p className="font-serif italic text-ink-faded">
               {query
                 ? "Seek with different words, good scribe."
                 : "Take up thy quill and inscribe thy first thought."}
@@ -111,15 +198,15 @@ const Index = () => {
             {!query && (
               <button
                 onClick={() => setCreating(true)}
-                className="btn-gilded px-6 py-3 rounded-sm inline-flex items-center gap-2"
+                className="btn-gilded px-5 py-2 rounded-sm inline-flex items-center gap-2 text-sm"
               >
-                <Plus className="w-5 h-5" />
+                <Feather className="w-4 h-4" />
                 Begin the First Scroll
               </button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filtered.map((n) => (
               <NoteCard
                 key={n.id}
@@ -132,29 +219,32 @@ const Index = () => {
         )}
       </main>
 
-      <footer className="border-t-2 border-gold-deep/40 py-8 text-center">
-        <Ornament className="max-w-md mx-auto mb-3" />
-        <p className="font-display text-xs uppercase tracking-[0.3em] text-ink-faded">
-          Anno Domini · Stored within thy Browser · {new Date().getFullYear()}
-        </p>
+      <footer className="border-t-4 border-double border-ink/70 mt-6">
+        <div className="container max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-[10px] font-display uppercase tracking-[0.3em] text-ink-faded">
+          <span>Printed by Quill &amp; Candlelight</span>
+          <span className="text-crimson">· Soli Deo Gloria ·</span>
+          <span>Stored within thy Browser</span>
+        </div>
       </footer>
 
       {(creating || editing) && (
         <NoteEditor
           note={editing}
-          onClose={() => {
-            setCreating(false);
-            setEditing(null);
-          }}
-          onSaved={() => {
-            setCreating(false);
-            setEditing(null);
-            refresh();
-          }}
+          onClose={() => { setCreating(false); setEditing(null); }}
+          onSaved={() => { setCreating(false); setEditing(null); refresh(); }}
         />
       )}
     </div>
   );
 };
+
+const Stat = ({ label, value }: { label: string; value: string | number }) => (
+  <div className="bg-parchment-light/80 px-2 py-2">
+    <div className="font-display text-lg md:text-xl text-crimson leading-none">{value}</div>
+    <div className="font-display text-[9px] md:text-[10px] uppercase tracking-[0.2em] text-ink-faded mt-1">
+      {label}
+    </div>
+  </div>
+);
 
 export default Index;
