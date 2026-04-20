@@ -5,7 +5,9 @@
 @tailwind utilities;
 
 /* Medieval Manuscript Design System
-   Aged parchment, ink, gilded gold, deep wine. All HSL.
+   Light: aged parchment, ink, gilded gold, deep wine.
+   Dark: pure black & white woodcut.
+   All HSL.
 */
 
 @layer base {
@@ -27,14 +29,12 @@
     --popover: 39 45% 88%;
     --popover-foreground: 25 35% 15%;
 
-    /* Gilded Gold */
     --primary: 38 65% 38%;
     --primary-foreground: 42 60% 95%;
     --gold: 42 75% 52%;
     --gold-deep: 36 70% 35%;
     --gold-pale: 45 65% 70%;
 
-    /* Wine / Crimson */
     --secondary: 0 55% 28%;
     --secondary-foreground: 42 60% 95%;
     --crimson: 355 60% 32%;
@@ -56,22 +56,88 @@
 
     --radius: 0.25rem;
 
-    /* Gradients */
     --gradient-parchment: radial-gradient(ellipse at top, hsl(42 50% 92%), hsl(35 35% 78%));
     --gradient-gold: linear-gradient(135deg, hsl(42 75% 52%), hsl(36 70% 35%));
     --gradient-wine: linear-gradient(135deg, hsl(355 60% 32%), hsl(0 70% 18%));
     --gradient-vignette: radial-gradient(ellipse at center, transparent 40%, hsl(25 40% 12% / 0.35) 100%);
 
-    /* Shadows */
     --shadow-manuscript: 0 10px 40px -10px hsl(25 40% 12% / 0.5), inset 0 0 60px hsl(28 35% 50% / 0.15);
     --shadow-gilded: 0 4px 20px hsl(36 70% 35% / 0.5), inset 0 1px 0 hsl(45 65% 70% / 0.6);
     --shadow-deep: 0 20px 60px -15px hsl(25 40% 12% / 0.7);
 
-    /* Texture noise (paper) */
     --paper-texture:
       repeating-radial-gradient(circle at 23% 17%, hsl(28 30% 45% / 0.04) 0px, transparent 2px),
       repeating-radial-gradient(circle at 77% 63%, hsl(25 40% 25% / 0.04) 0px, transparent 3px),
       repeating-linear-gradient(45deg, hsl(35 30% 60% / 0.03) 0 1px, transparent 1px 4px);
+
+    --body-bg:
+      var(--paper-texture),
+      radial-gradient(ellipse at top left, hsl(42 55% 90%) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, hsl(35 45% 75%) 0%, transparent 60%),
+      linear-gradient(180deg, hsl(39 42% 84%), hsl(35 35% 76%));
+  }
+
+  .dark {
+    /* Pure monochrome — black ink on black vellum */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 96%;
+
+    --parchment: 0 0% 8%;
+    --parchment-dark: 0 0% 12%;
+    --parchment-light: 0 0% 10%;
+
+    --ink: 0 0% 96%;
+    --ink-faded: 0 0% 65%;
+
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 96%;
+
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 96%;
+
+    --primary: 0 0% 96%;
+    --primary-foreground: 0 0% 4%;
+    --gold: 0 0% 90%;
+    --gold-deep: 0 0% 70%;
+    --gold-pale: 0 0% 96%;
+
+    --secondary: 0 0% 100%;
+    --secondary-foreground: 0 0% 4%;
+    --crimson: 0 0% 96%;
+    --crimson-deep: 0 0% 100%;
+
+    --muted: 0 0% 14%;
+    --muted-foreground: 0 0% 60%;
+
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 4%;
+    --forest: 0 0% 80%;
+
+    --destructive: 0 0% 100%;
+    --destructive-foreground: 0 0% 4%;
+
+    --border: 0 0% 35%;
+    --input: 0 0% 12%;
+    --ring: 0 0% 96%;
+
+    --gradient-parchment: linear-gradient(180deg, hsl(0 0% 6%), hsl(0 0% 4%));
+    --gradient-gold: linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 70%));
+    --gradient-wine: linear-gradient(135deg, hsl(0 0% 96%), hsl(0 0% 80%));
+    --gradient-vignette: radial-gradient(ellipse at center, transparent 40%, hsl(0 0% 0% / 0.6) 100%);
+
+    --shadow-manuscript: 0 10px 40px -10px hsl(0 0% 0% / 0.8), inset 0 0 60px hsl(0 0% 0% / 0.5);
+    --shadow-gilded: 0 4px 20px hsl(0 0% 0% / 0.6), inset 0 1px 0 hsl(0 0% 100% / 0.15);
+    --shadow-deep: 0 20px 60px -15px hsl(0 0% 0% / 0.95);
+
+    --paper-texture:
+      repeating-radial-gradient(circle at 23% 17%, hsl(0 0% 100% / 0.025) 0px, transparent 2px),
+      repeating-radial-gradient(circle at 77% 63%, hsl(0 0% 100% / 0.02) 0px, transparent 3px),
+      repeating-linear-gradient(45deg, hsl(0 0% 100% / 0.015) 0 1px, transparent 1px 4px);
+
+    --body-bg:
+      var(--paper-texture),
+      radial-gradient(ellipse at top, hsl(0 0% 8%) 0%, transparent 60%),
+      linear-gradient(180deg, hsl(0 0% 4%), hsl(0 0% 2%));
   }
 }
 
@@ -86,27 +152,20 @@
 
   body {
     @apply bg-background text-foreground;
-    background-image:
-      var(--paper-texture),
-      radial-gradient(ellipse at top left, hsl(42 55% 90%) 0%, transparent 50%),
-      radial-gradient(ellipse at bottom right, hsl(35 45% 75%) 0%, transparent 60%),
-      linear-gradient(180deg, hsl(39 42% 84%), hsl(35 35% 76%));
+    background-image: var(--body-bg);
     background-attachment: fixed;
     font-family: 'Cormorant Garamond', 'Garamond', serif;
     font-size: 16px;
   }
 
-  /* Headings & UI labels — Cinzel everywhere for consistency */
   h1, h2, h3, h4, h5, h6, .display, label, button, input, textarea, select {
     font-family: 'Cinzel', 'Trajan Pro', serif;
   }
 
-  /* Body prose uses Cormorant */
   p, .prose, .body-text {
     font-family: 'Cormorant Garamond', 'Garamond', serif;
   }
 
-  /* Blackletter reserved ONLY for the masthead title */
   .blackletter {
     font-family: 'UnifrakturMaguntia', 'Old English Text MT', serif;
     letter-spacing: 0.01em;
@@ -119,11 +178,10 @@
 }
 
 @layer components {
-  /* Parchment panel */
   .parchment {
     background:
       var(--paper-texture),
-      radial-gradient(ellipse at 30% 20%, hsl(42 55% 92%), hsl(38 38% 80%) 70%, hsl(32 32% 70%) 100%);
+      var(--gradient-parchment);
     box-shadow: var(--shadow-manuscript);
     border: 1px solid hsl(var(--border) / 0.5);
     position: relative;
@@ -138,27 +196,16 @@
     border-radius: inherit;
   }
 
-  /* Ornate gilded border */
   .gilded-frame {
     position: relative;
     padding: 1.25rem;
     background:
-      linear-gradient(hsl(var(--parchment-light)), hsl(var(--parchment-dark))) padding-box,
+      hsl(var(--parchment-light)) padding-box,
       var(--gradient-gold) border-box;
     border: 3px double transparent;
     border-radius: var(--radius);
   }
 
-  .gilded-frame::after {
-    content: '';
-    position: absolute;
-    inset: 6px;
-    border: 1px solid hsl(var(--gold) / 0.4);
-    border-radius: 2px;
-    pointer-events: none;
-  }
-
-  /* Drop cap (illuminated initial) */
   .drop-cap::first-letter {
     font-family: 'UnifrakturMaguntia', serif;
     float: left;
@@ -166,27 +213,23 @@
     line-height: 0.85;
     padding: 0.35rem 0.6rem 0 0;
     color: hsl(var(--crimson));
-    text-shadow: 1px 1px 0 hsl(var(--gold) / 0.6);
   }
 
-  /* Wax seal */
   .wax-seal {
     width: 3.5rem;
     height: 3.5rem;
     border-radius: 50%;
-    background: radial-gradient(circle at 35% 30%, hsl(0 70% 45%), hsl(0 75% 22%) 70%, hsl(0 80% 12%));
+    background: radial-gradient(circle at 35% 30%, hsl(var(--crimson) / 0.9), hsl(var(--crimson-deep)) 70%, hsl(var(--ink)));
     box-shadow:
-      inset -4px -6px 10px hsl(0 80% 12% / 0.6),
-      inset 3px 4px 6px hsl(0 70% 60% / 0.4),
-      0 4px 10px hsl(0 80% 12% / 0.5);
+      inset -4px -6px 10px hsl(var(--ink) / 0.6),
+      inset 3px 4px 6px hsl(var(--gold-pale) / 0.3),
+      0 4px 10px hsl(var(--ink) / 0.5);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     color: hsl(var(--gold-pale));
-    font-family: 'UnifrakturMaguntia', serif;
   }
 
-  /* Ornament divider */
   .ornament {
     display: flex;
     align-items: center;
@@ -201,7 +244,6 @@
     background: linear-gradient(90deg, transparent, hsl(var(--gold-deep) / 0.6), transparent);
   }
 
-  /* Ink button */
   .btn-ink {
     background: var(--gradient-wine);
     color: hsl(var(--gold-pale));
@@ -212,14 +254,19 @@
     text-transform: uppercase;
     transition: all 0.25s ease;
   }
+  .dark .btn-ink {
+    background: hsl(var(--ink));
+    color: hsl(var(--background));
+    border-color: hsl(var(--ink));
+  }
   .btn-ink:hover {
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px hsl(0 70% 18% / 0.6), inset 0 1px 0 hsl(45 65% 70% / 0.7);
+    filter: brightness(1.1);
   }
 
   .btn-gilded {
     background: var(--gradient-gold);
-    color: hsl(var(--ink));
+    color: hsl(var(--background));
     border: 1px solid hsl(var(--gold-deep));
     box-shadow: var(--shadow-gilded);
     font-family: 'Cinzel', serif;
@@ -231,31 +278,10 @@
     filter: brightness(1.08);
   }
 
-  /* Note card hover */
-  .note-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  .note-card:hover {
-    transform: translateY(-4px) rotate(-0.3deg);
-    box-shadow: var(--shadow-deep);
-  }
-
-  /* Flourish corners */
-  .corner-flourish {
-    position: absolute;
-    width: 32px;
-    height: 32px;
-    border: 2px solid hsl(var(--gold-deep));
-    pointer-events: none;
-  }
-
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 12px; height: 12px; }
-  ::-webkit-scrollbar-track {
-    background: hsl(var(--parchment-dark) / 0.4);
-  }
+  ::-webkit-scrollbar-track { background: hsl(var(--parchment-dark) / 0.4); }
   ::-webkit-scrollbar-thumb {
-    background: var(--gradient-gold);
+    background: hsl(var(--ink) / 0.6);
     border: 2px solid hsl(var(--parchment-dark));
     border-radius: 6px;
   }

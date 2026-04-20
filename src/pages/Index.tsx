@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { deleteNote, listNotes, type Note } from "@/lib/db";
 import { NoteCard } from "@/components/NoteCard";
-import { NoteEditor } from "@/components/NoteEditor";
-import { Plus, Search, Shield, Scroll, Feather, Cloud, Sun, Moon } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { Plus, Search, Shield, Scroll, Feather, Sun, Moon } from "lucide-react";
 import { toast } from "sonner";
 
 const MONTHS = [
@@ -10,19 +11,6 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-const toRoman = (num: number): string => {
-  const map: [number, string][] = [
-    [1000, "M"], [900, "CM"], [500, "D"], [400, "CD"],
-    [100, "C"], [90, "XC"], [50, "L"], [40, "XL"],
-    [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"],
-  ];
-  let r = "";
-  for (const [v, s] of map) {
-    while (num >= v) { r += s; num -= v; }
-  }
-  return r;
-};
 
 const fortunes = [
   "A raven brings tidings from distant shores.",
@@ -34,10 +22,9 @@ const fortunes = [
 ];
 
 const Index = () => {
+  const navigate = useNavigate();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<Note | null>(null);
-  const [creating, setCreating] = useState(false);
   const [query, setQuery] = useState("");
   const [now, setNow] = useState(new Date());
 
@@ -92,31 +79,27 @@ const Index = () => {
   const PeriodIcon = period.icon;
 
   const dateStr = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]}`;
-  const yearRoman = toRoman(now.getFullYear());
 
   return (
     <div className="min-h-screen">
       {/* Newspaper masthead */}
       <header className="border-b-4 border-double border-ink/70">
         <div className="container max-w-7xl mx-auto px-4 pt-4 pb-2">
-          {/* Top strip: date | weather | fortune */}
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-display uppercase tracking-widest text-ink-faded border-b border-ink/30 pb-2 mb-3">
+          {/* Top strip: date | fortune | theme toggle */}
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-widest text-ink-faded border-b border-ink/30 pb-2 mb-3">
             <span className="flex items-center gap-1.5">
               <PeriodIcon className="w-3.5 h-3.5" />
               {period.label} · {dateStr}
             </span>
-            <span className="hidden md:inline italic font-serif normal-case tracking-normal text-sm text-crimson">
+            <span className="hidden md:inline italic body-text normal-case tracking-normal text-sm text-crimson">
               "{fortune}"
             </span>
-            <span className="flex items-center gap-1.5">
-              <Cloud className="w-3.5 h-3.5" />
-              Anno Domini {yearRoman}
-            </span>
+            <ThemeToggle />
           </div>
 
           {/* Title block */}
           <div className="text-center">
-            <div className="flex items-center justify-center gap-3 text-crimson text-[10px] font-display uppercase tracking-[0.4em] mb-1">
+            <div className="flex items-center justify-center gap-3 text-crimson text-[10px] uppercase tracking-[0.4em] mb-1">
               <span>· Vol. I ·</span>
               <span>No. {notes.length || "I"}</span>
               <span>· Est. MMXXV ·</span>
@@ -124,7 +107,7 @@ const Index = () => {
             <h1 className="blackletter text-5xl md:text-7xl text-ink leading-none">
               The Scribe's Codex
             </h1>
-            <div className="flex items-center justify-center gap-3 mt-2 text-[10px] font-display uppercase tracking-[0.35em] text-ink-faded">
+            <div className="flex items-center justify-center gap-3 mt-2 text-[10px] uppercase tracking-[0.35em] text-ink-faded">
               <span className="flex-1 h-px bg-ink/40" />
               <span className="flex items-center gap-1.5">
                 <Shield className="w-3 h-3 text-forest" />
@@ -155,11 +138,11 @@ const Index = () => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Seek among the scrolls..."
-              className="w-full bg-parchment-light/80 border border-ink/40 rounded-sm pl-9 pr-3 py-2 font-serif text-ink placeholder:text-ink-faded/60 focus:outline-none focus:border-crimson"
+              className="w-full bg-parchment-light/80 border border-ink/40 rounded-sm pl-9 pr-3 py-2 text-ink placeholder:text-ink-faded/60 focus:outline-none focus:border-crimson"
             />
           </div>
           <button
-            onClick={() => setCreating(true)}
+            onClick={() => navigate("/note/new")}
             className="btn-ink px-5 py-2 rounded-sm flex items-center justify-center gap-2 text-sm whitespace-nowrap"
           >
             <Plus className="w-4 h-4" />
@@ -170,34 +153,33 @@ const Index = () => {
 
       {/* Notes grid */}
       <main className="container max-w-7xl mx-auto px-4 py-5">
-        {/* Section heading */}
         <div className="flex items-end justify-between border-b-2 border-ink/40 pb-1 mb-4">
           <h2 className="blackletter text-2xl md:text-3xl text-ink leading-none">
             {query ? "Search Results" : "Today's Chronicle"}
           </h2>
-          <span className="font-display text-[10px] uppercase tracking-[0.3em] text-ink-faded pb-1">
+          <span className="text-[10px] uppercase tracking-[0.3em] text-ink-faded pb-1">
             {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
           </span>
         </div>
 
         {loading ? (
-          <p className="text-center font-display tracking-widest text-ink-faded py-16 text-sm">
+          <p className="text-center tracking-widest text-ink-faded py-16 text-sm uppercase">
             Unfurling thy scrolls...
           </p>
         ) : filtered.length === 0 ? (
           <div className="parchment max-w-xl mx-auto rounded-sm p-8 text-center space-y-4 relative">
             <Scroll className="w-12 h-12 text-crimson/70 mx-auto" />
-            <h3 className="font-display text-2xl text-ink">
+            <h3 className="text-2xl text-ink">
               {query ? "No scroll matcheth thy query" : "Thy codex lieth empty"}
             </h3>
-            <p className="font-serif italic text-ink-faded">
+            <p className="italic text-ink-faded body-text">
               {query
                 ? "Seek with different words, good scribe."
                 : "Take up thy quill and inscribe thy first thought."}
             </p>
             {!query && (
               <button
-                onClick={() => setCreating(true)}
+                onClick={() => navigate("/note/new")}
                 className="btn-gilded px-5 py-2 rounded-sm inline-flex items-center gap-2 text-sm"
               >
                 <Feather className="w-4 h-4" />
@@ -211,7 +193,6 @@ const Index = () => {
               <NoteCard
                 key={n.id}
                 note={n}
-                onOpen={() => setEditing(n)}
                 onDelete={() => handleDelete(n)}
               />
             ))}
@@ -220,28 +201,20 @@ const Index = () => {
       </main>
 
       <footer className="border-t-4 border-double border-ink/70 mt-6">
-        <div className="container max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-[10px] font-display uppercase tracking-[0.3em] text-ink-faded">
+        <div className="container max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.3em] text-ink-faded">
           <span>Printed by Quill &amp; Candlelight</span>
           <span className="text-crimson">· Soli Deo Gloria ·</span>
           <span>Stored within thy Browser</span>
         </div>
       </footer>
-
-      {(creating || editing) && (
-        <NoteEditor
-          note={editing}
-          onClose={() => { setCreating(false); setEditing(null); }}
-          onSaved={() => { setCreating(false); setEditing(null); refresh(); }}
-        />
-      )}
     </div>
   );
 };
 
 const Stat = ({ label, value }: { label: string; value: string | number }) => (
   <div className="bg-parchment-light/80 px-2 py-2">
-    <div className="font-display text-lg md:text-xl text-crimson leading-none">{value}</div>
-    <div className="font-display text-[9px] md:text-[10px] uppercase tracking-[0.2em] text-ink-faded mt-1">
+    <div className="text-lg md:text-xl text-crimson leading-none">{value}</div>
+    <div className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] text-ink-faded mt-1">
       {label}
     </div>
   </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getMediaMany, type Note, type MediaAttachment } from "@/lib/db";
 import { Trash2, Image as ImageIcon, Music, Film, Paperclip, Quote } from "lucide-react";
 
@@ -14,11 +15,9 @@ const wordCount = (s: string) => (s.trim() ? s.trim().split(/\s+/).length : 0);
 
 export const NoteCard = ({
   note,
-  onOpen,
   onDelete,
 }: {
   note: Note;
-  onOpen: () => void;
   onDelete: () => void;
 }) => {
   const [preview, setPreview] = useState<string>("");
@@ -54,21 +53,20 @@ export const NoteCard = ({
   const totalRelics = note.mediaIds.length;
 
   return (
-    <article
-      onClick={onOpen}
-      className="group relative cursor-pointer bg-parchment-light/70 border border-ink/40 rounded-[2px] overflow-hidden hover:border-crimson hover:shadow-[0_8px_24px_-8px_hsl(25_40%_12%/0.5)] hover:-translate-y-0.5 transition-all duration-200"
-      style={{
-        backgroundImage: "var(--paper-texture)",
-      }}
+    <Link
+      to={`/note/${note.id}`}
+      className="group relative block bg-parchment-light/70 border border-ink/40 rounded-[2px] overflow-hidden hover:border-crimson hover:shadow-[0_8px_24px_-8px_hsl(var(--ink)/0.5)] hover:-translate-y-0.5 transition-all duration-200 no-underline"
+      style={{ backgroundImage: "var(--paper-texture)" }}
+      title="Click to open · double-click or middle-click to open in new tab"
     >
-      {/* Top dateline strip — like a newspaper byline */}
+      {/* Top dateline strip */}
       <div className="flex items-center justify-between px-3 py-1 bg-ink text-gold-pale text-[10px] uppercase tracking-[0.2em]">
         <span className="flex items-center gap-1.5">
           <span className="w-1 h-1 rounded-full bg-crimson" />
           {fmtDate(note.updatedAt)} · {fmtTime(note.updatedAt)}
         </span>
         <button
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }}
           className="opacity-60 hover:opacity-100 hover:text-crimson transition"
           aria-label="Delete scroll"
         >
@@ -76,15 +74,13 @@ export const NoteCard = ({
         </button>
       </div>
 
-      {/* Preview image (if any) */}
       {preview && (
         <div className="relative h-28 overflow-hidden border-b border-ink/40">
-          <img src={preview} alt="" className="w-full h-full object-cover sepia-[0.25] contrast-105" />
+          <img src={preview} alt="" className="w-full h-full object-cover sepia-[0.25] contrast-105 dark:sepia-0 dark:grayscale" />
           <div className="absolute inset-0 bg-gradient-to-t from-parchment-light/60 via-transparent to-transparent" />
         </div>
       )}
 
-      {/* Content */}
       <div className="p-3 space-y-2">
         <h3 className="text-base leading-tight text-ink font-semibold line-clamp-2 tracking-wide">
           {note.title}
@@ -103,7 +99,6 @@ export const NoteCard = ({
           </p>
         )}
 
-        {/* Footer meta */}
         <div className="flex items-center justify-between pt-1.5 border-t border-dashed border-ink/30 text-[10px] uppercase tracking-[0.15em] text-ink-faded">
           <span>{wc} {wc === 1 ? "word" : "words"}</span>
           {totalRelics > 0 && (
@@ -116,6 +111,6 @@ export const NoteCard = ({
           )}
         </div>
       </div>
-    </article>
+    </Link>
   );
 };
