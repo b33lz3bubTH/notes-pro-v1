@@ -1,96 +1,77 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=UnifrakturMaguntia&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Medieval Manuscript Design System
+   Aged parchment, ink, gilded gold, deep wine. All HSL.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Parchment & Ink */
+    --background: 39 38% 88%;
+    --foreground: 25 35% 15%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --parchment: 39 45% 85%;
+    --parchment-dark: 35 30% 72%;
+    --parchment-light: 42 50% 92%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --ink: 25 40% 12%;
+    --ink-faded: 25 25% 30%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --card: 38 42% 84%;
+    --card-foreground: 25 35% 15%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --popover: 39 45% 88%;
+    --popover-foreground: 25 35% 15%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Gilded Gold */
+    --primary: 38 65% 38%;
+    --primary-foreground: 42 60% 95%;
+    --gold: 42 75% 52%;
+    --gold-deep: 36 70% 35%;
+    --gold-pale: 45 65% 70%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Wine / Crimson */
+    --secondary: 0 55% 28%;
+    --secondary-foreground: 42 60% 95%;
+    --crimson: 355 60% 32%;
+    --crimson-deep: 358 65% 22%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --muted: 36 25% 75%;
+    --muted-foreground: 28 25% 32%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --accent: 142 35% 25%;
+    --accent-foreground: 42 60% 95%;
+    --forest: 142 40% 22%;
 
-    --radius: 0.5rem;
+    --destructive: 0 65% 35%;
+    --destructive-foreground: 42 60% 95%;
 
-    --sidebar-background: 0 0% 98%;
+    --border: 32 35% 45%;
+    --input: 38 35% 78%;
+    --ring: 38 65% 38%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --radius: 0.25rem;
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Gradients */
+    --gradient-parchment: radial-gradient(ellipse at top, hsl(42 50% 92%), hsl(35 35% 78%));
+    --gradient-gold: linear-gradient(135deg, hsl(42 75% 52%), hsl(36 70% 35%));
+    --gradient-wine: linear-gradient(135deg, hsl(355 60% 32%), hsl(0 70% 18%));
+    --gradient-vignette: radial-gradient(ellipse at center, transparent 40%, hsl(25 40% 12% / 0.35) 100%);
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Shadows */
+    --shadow-manuscript: 0 10px 40px -10px hsl(25 40% 12% / 0.5), inset 0 0 60px hsl(28 35% 50% / 0.15);
+    --shadow-gilded: 0 4px 20px hsl(36 70% 35% / 0.5), inset 0 1px 0 hsl(45 65% 70% / 0.6);
+    --shadow-deep: 0 20px 60px -15px hsl(25 40% 12% / 0.7);
 
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Texture noise (paper) */
+    --paper-texture:
+      repeating-radial-gradient(circle at 23% 17%, hsl(28 30% 45% / 0.04) 0px, transparent 2px),
+      repeating-radial-gradient(circle at 77% 63%, hsl(25 40% 25% / 0.04) 0px, transparent 3px),
+      repeating-linear-gradient(45deg, hsl(35 30% 60% / 0.03) 0 1px, transparent 1px 4px);
   }
 }
 
@@ -99,7 +80,187 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html, body, #root {
+    min-height: 100%;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-serif;
+    background-image:
+      var(--paper-texture),
+      radial-gradient(ellipse at top left, hsl(42 55% 90%) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, hsl(35 45% 75%) 0%, transparent 60%),
+      linear-gradient(180deg, hsl(39 42% 84%), hsl(35 35% 76%));
+    background-attachment: fixed;
+    font-family: 'Cormorant Garamond', 'Garamond', serif;
+  }
+
+  h1, h2, h3, h4, .display {
+    font-family: 'Cinzel', 'Trajan Pro', serif;
+    letter-spacing: 0.02em;
+  }
+
+  .blackletter {
+    font-family: 'UnifrakturMaguntia', 'Old English Text MT', serif;
   }
 }
+
+@layer components {
+  /* Parchment panel */
+  .parchment {
+    background:
+      var(--paper-texture),
+      radial-gradient(ellipse at 30% 20%, hsl(42 55% 92%), hsl(38 38% 80%) 70%, hsl(32 32% 70%) 100%);
+    box-shadow: var(--shadow-manuscript);
+    border: 1px solid hsl(var(--border) / 0.5);
+    position: relative;
+  }
+
+  .parchment::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-vignette);
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* Ornate gilded border */
+  .gilded-frame {
+    position: relative;
+    padding: 1.25rem;
+    background:
+      linear-gradient(hsl(var(--parchment-light)), hsl(var(--parchment-dark))) padding-box,
+      var(--gradient-gold) border-box;
+    border: 3px double transparent;
+    border-radius: var(--radius);
+  }
+
+  .gilded-frame::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border: 1px solid hsl(var(--gold) / 0.4);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  /* Drop cap (illuminated initial) */
+  .drop-cap::first-letter {
+    font-family: 'UnifrakturMaguntia', serif;
+    float: left;
+    font-size: 4.5rem;
+    line-height: 0.85;
+    padding: 0.35rem 0.6rem 0 0;
+    color: hsl(var(--crimson));
+    text-shadow: 1px 1px 0 hsl(var(--gold) / 0.6);
+  }
+
+  /* Wax seal */
+  .wax-seal {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, hsl(0 70% 45%), hsl(0 75% 22%) 70%, hsl(0 80% 12%));
+    box-shadow:
+      inset -4px -6px 10px hsl(0 80% 12% / 0.6),
+      inset 3px 4px 6px hsl(0 70% 60% / 0.4),
+      0 4px 10px hsl(0 80% 12% / 0.5);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: hsl(var(--gold-pale));
+    font-family: 'UnifrakturMaguntia', serif;
+  }
+
+  /* Ornament divider */
+  .ornament {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: hsl(var(--gold-deep));
+  }
+  .ornament::before,
+  .ornament::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(var(--gold-deep) / 0.6), transparent);
+  }
+
+  /* Ink button */
+  .btn-ink {
+    background: var(--gradient-wine);
+    color: hsl(var(--gold-pale));
+    border: 1px solid hsl(var(--gold-deep));
+    box-shadow: var(--shadow-gilded);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: all 0.25s ease;
+  }
+  .btn-ink:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px hsl(0 70% 18% / 0.6), inset 0 1px 0 hsl(45 65% 70% / 0.7);
+  }
+
+  .btn-gilded {
+    background: var(--gradient-gold);
+    color: hsl(var(--ink));
+    border: 1px solid hsl(var(--gold-deep));
+    box-shadow: var(--shadow-gilded);
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.08em;
+    transition: all 0.25s ease;
+  }
+  .btn-gilded:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.08);
+  }
+
+  /* Note card hover */
+  .note-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .note-card:hover {
+    transform: translateY(-4px) rotate(-0.3deg);
+    box-shadow: var(--shadow-deep);
+  }
+
+  /* Flourish corners */
+  .corner-flourish {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border: 2px solid hsl(var(--gold-deep));
+    pointer-events: none;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 12px; height: 12px; }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--parchment-dark) / 0.4);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--gradient-gold);
+    border: 2px solid hsl(var(--parchment-dark));
+    border-radius: 6px;
+  }
+}
+
+@keyframes seal-press {
+  0% { transform: scale(0) rotate(-45deg); opacity: 0; }
+  60% { transform: scale(1.15) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+@keyframes ink-fade {
+  from { opacity: 0; filter: blur(4px); }
+  to { opacity: 1; filter: blur(0); }
+}
+@keyframes page-turn {
+  from { opacity: 0; transform: rotateY(-15deg) translateX(-20px); }
+  to { opacity: 1; transform: rotateY(0) translateX(0); }
+}
+.animate-seal { animation: seal-press 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.animate-ink { animation: ink-fade 0.7s ease-out; }
+.animate-page { animation: page-turn 0.5s ease-out; }

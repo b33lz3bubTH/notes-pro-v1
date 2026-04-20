@@ -13,12 +13,36 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ['Cinzel', 'serif'],
+        serif: ['Cormorant Garamond', 'Garamond', 'serif'],
+        blackletter: ['UnifrakturMaguntia', 'serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        parchment: {
+          DEFAULT: "hsl(var(--parchment))",
+          light: "hsl(var(--parchment-light))",
+          dark: "hsl(var(--parchment-dark))",
+        },
+        ink: {
+          DEFAULT: "hsl(var(--ink))",
+          faded: "hsl(var(--ink-faded))",
+        },
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          deep: "hsl(var(--gold-deep))",
+          pale: "hsl(var(--gold-pale))",
+        },
+        crimson: {
+          DEFAULT: "hsl(var(--crimson))",
+          deep: "hsl(var(--crimson-deep))",
+        },
+        forest: "hsl(var(--forest))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
