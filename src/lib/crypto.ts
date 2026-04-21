@@ -14,10 +14,11 @@ export function randomBytes(n: number): Uint8Array {
 
 // Force a Uint8Array backed by a real ArrayBuffer (not SharedArrayBuffer)
 // so it satisfies BufferSource / BlobPart in strict TS lib definitions.
-function toBuf(u: Uint8Array): Uint8Array {
-  const out = new Uint8Array(new ArrayBuffer(u.byteLength));
+function toBuf(u: Uint8Array): Uint8Array<ArrayBuffer> {
+  const ab = new ArrayBuffer(u.byteLength);
+  const out = new Uint8Array(ab);
   out.set(u);
-  return out;
+  return out as Uint8Array<ArrayBuffer>;
 }
 
 export const generateSalt = () => randomBytes(SALT_BYTES);
