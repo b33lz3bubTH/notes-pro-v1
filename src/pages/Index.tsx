@@ -13,15 +13,6 @@ const MONTHS = [
 ];
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-const fortunes = [
-  "A raven brings tidings from distant shores.",
-  "Beware the ides — but rejoice in thy ink.",
-  "He who inscribeth wisely, remembereth long.",
-  "The quill is mightier than the broadsword.",
-  "Fortune favours the diligent scribe.",
-  "By candlelight, truth findeth its parchment.",
-];
-
 const Index = () => {
   const navigate = useNavigate();
   const [notes, setNotes] = useState<Note[]>([]);
