@@ -7,9 +7,17 @@ const enc = new TextEncoder();
 const dec = new TextDecoder();
 
 export function randomBytes(n: number): Uint8Array {
-  const b = new Uint8Array(n);
+  const b = new Uint8Array(new ArrayBuffer(n));
   crypto.getRandomValues(b);
   return b;
+}
+
+// Force a Uint8Array backed by a real ArrayBuffer (not SharedArrayBuffer)
+// so it satisfies BufferSource / BlobPart in strict TS lib definitions.
+function toBuf(u: Uint8Array): Uint8Array {
+  const out = new Uint8Array(new ArrayBuffer(u.byteLength));
+  out.set(u);
+  return out;
 }
 
 export const generateSalt = () => randomBytes(SALT_BYTES);
