@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   addMedia,
@@ -19,6 +19,7 @@ import {
   Feather,
   Trash2,
   ExternalLink,
+  ClipboardPaste,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -30,6 +31,12 @@ const MONTHS = [
 const fmtFull = (t: number) => {
   const d = new Date(t);
   return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()} · ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}`;
+};
+
+const extFromMime = (mime: string) => {
+  if (!mime) return "bin";
+  const sub = mime.split("/")[1] || "bin";
+  return sub.split(";")[0].split("+")[0];
 };
 
 const NoteEditorPage = () => {
@@ -44,6 +51,7 @@ const NoteEditorPage = () => {
   const [media, setMedia] = useState<MediaAttachment[]>([]);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Load existing
@@ -80,17 +88,93 @@ const NoteEditorPage = () => {
 
   const markDirty = () => setDirty(true);
 
-  const handleAttach = async (files: FileList | null) => {
-    if (!files) return;
+  const ingestFiles = useCallback(async (files: File[]) => {
+    if (!files.length) return;
     const added: MediaAttachment[] = [];
-    for (const f of Array.from(files)) {
+    for (const f of files) {
       const m = await addMedia(f);
       added.push(m);
     }
     setMedia((prev) => [...prev, ...added]);
-    markDirty();
-    toast.success(`${added.length} relic${added.length > 1 ? "s" : ""} affixed`);
+    setDirty(true);
+    toast.success(
+      `${added.length} ${added.length > 1 ? "relics" : "relic"} affixed`,
+    );
+  }, []);
+
+  const handleAttach = (files: FileList | null) => {
+    if (!files) return;
+    void ingestFiles(Array.from(files));
   };
+
+  // Paste handler — supports clipboard images (snipping tool, screenshot)
+  // and copied files. Falls back silently if clipboard contains only text.
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const dt = e.clipboardData;
+      if (!dt) return;
+      const out: File[] = [];
+      // Files take priority (e.g. copied from file explorer)
+      if (dt.files && dt.files.length) {
+        for (const f of Array.from(dt.files)) out.push(f);
+      } else if (dt.items) {
+        for (const item of Array.from(dt.items)) {
+          if (item.kind !== "file") continue;
+          const blob = item.getAsFile();
+          if (!blob) continue;
+          // Snipping tool / screenshots arrive without a filename
+          const named =
+            blob.name && blob.name !== "image.png"
+              ? blob
+              : new File(
+                  [blob],
+                  `pasted-${Date.now()}.${extFromMime(blob.type)}`,
+                  { type: blob.type || "image/png" },
+                );
+          out.push(named);
+        }
+      }
+      if (!out.length) return;
+      e.preventDefault();
+      void ingestFiles(out);
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [ingestFiles]);
+
+  // Drag & drop on the page
+  useEffect(() => {
+    let depth = 0;
+    const onEnter = (e: DragEvent) => {
+      if (!e.dataTransfer?.types.includes("Files")) return;
+      depth++;
+      setDragOver(true);
+    };
+    const onLeave = () => {
+      depth = Math.max(0, depth - 1);
+      if (depth === 0) setDragOver(false);
+    };
+    const onOver = (e: DragEvent) => {
+      if (e.dataTransfer?.types.includes("Files")) e.preventDefault();
+    };
+    const onDrop = (e: DragEvent) => {
+      if (!e.dataTransfer?.files?.length) return;
+      e.preventDefault();
+      depth = 0;
+      setDragOver(false);
+      void ingestFiles(Array.from(e.dataTransfer.files));
+    };
+    window.addEventListener("dragenter", onEnter);
+    window.addEventListener("dragleave", onLeave);
+    window.addEventListener("dragover", onOver);
+    window.addEventListener("drop", onDrop);
+    return () => {
+      window.removeEventListener("dragenter", onEnter);
+      window.removeEventListener("dragleave", onLeave);
+      window.removeEventListener("dragover", onOver);
+      window.removeEventListener("drop", onDrop);
+    };
+  }, [ingestFiles]);
 
   const removeMedia = (mid: string) => {
     setMedia((prev) => prev.filter((m) => m.id !== mid));
@@ -130,7 +214,7 @@ const NoteEditorPage = () => {
     navigate("/");
   };
 
-  // Keyboard
+  // Keyboard shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
@@ -144,7 +228,7 @@ const NoteEditorPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title, body, media, dirty]);
 
-  // Warn on unload
+  // Warn on tab close with unsaved
   useEffect(() => {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
       if (dirty) { e.preventDefault(); e.returnValue = ""; }
@@ -165,7 +249,7 @@ const NoteEditorPage = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
       {/* Top bar */}
       <header className="sticky top-0 z-20 border-b-2 border-ink/50 bg-background/95 backdrop-blur">
         <div className="container max-w-4xl mx-auto px-4 py-2 flex items-center gap-2">
@@ -265,17 +349,23 @@ const NoteEditorPage = () => {
 
           {/* Media */}
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
               <label className="text-[10px] uppercase tracking-[0.3em] text-crimson">
                 Affixed Relics {media.length > 0 && <span className="text-ink-faded ml-1">({media.length})</span>}
               </label>
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="text-[10px] uppercase tracking-[0.2em] px-3 py-1.5 bg-parchment-dark/60 border border-ink/40 rounded-sm hover:bg-parchment-dark hover:border-crimson text-ink flex items-center gap-1.5 transition"
-              >
-                <Paperclip className="w-3 h-3" />
-                Attach
-              </button>
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.2em] text-ink-faded">
+                  <ClipboardPaste className="w-3 h-3" />
+                  Paste · Drop · Attach
+                </span>
+                <button
+                  onClick={() => fileRef.current?.click()}
+                  className="text-[10px] uppercase tracking-[0.2em] px-3 py-1.5 bg-parchment-dark/60 border border-ink/40 rounded-sm hover:bg-parchment-dark hover:border-crimson text-ink flex items-center gap-1.5 transition"
+                >
+                  <Paperclip className="w-3 h-3" />
+                  Attach
+                </button>
+              </div>
               <input
                 ref={fileRef}
                 type="file"
@@ -296,16 +386,28 @@ const NoteEditorPage = () => {
                 onClick={() => fileRef.current?.click()}
                 className="w-full text-center text-sm italic text-ink-faded py-6 border border-dashed border-ink/30 rounded-[2px] hover:border-crimson hover:text-crimson transition body-text"
               >
-                No relics affixed — click to attach images, audio, video or files
+                No relics affixed — click, drop a file, or paste an image (⌘V)
               </button>
             )}
           </div>
 
           <div className="text-center text-[10px] uppercase tracking-[0.3em] text-ink-faded pt-2 border-t border-ink/20">
-            ⌘S to seal · ESC for the codex
+            ⌘S to seal · ESC for the codex · ⌘V to paste images
           </div>
         </div>
       </main>
+
+      {/* Drag overlay */}
+      {dragOver && (
+        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center bg-ink/40 backdrop-blur-sm">
+          <div className="parchment px-8 py-6 rounded-sm border-2 border-dashed border-crimson text-center">
+            <Paperclip className="w-8 h-8 text-crimson mx-auto mb-2" />
+            <div className="text-sm uppercase tracking-[0.3em] text-ink">
+              Release to affix as a relic
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
