@@ -58,10 +58,7 @@ const Index = () => {
     return { totalMedia, words, todayCount };
   }, [notes]);
 
-  const fortune = useMemo(
-    () => fortunes[now.getDate() % fortunes.length],
-    [now],
-  );
+  const lastEntry = notes[0]?.updatedAt;
   const hour = now.getHours();
   const period =
     hour < 6 ? { label: "Matins", icon: Moon }
@@ -83,8 +80,10 @@ const Index = () => {
               <PeriodIcon className="w-3.5 h-3.5" />
               {period.label} · {dateStr}
             </span>
-            <span className="hidden md:inline italic body-text normal-case tracking-normal text-sm text-crimson">
-              &ldquo;{fortune}&rdquo;
+            <span className="hidden md:inline body-text normal-case tracking-normal text-xs text-ink-faded">
+              {lastEntry
+                ? `Last inscribed ${new Date(lastEntry).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`
+                : "An empty codex awaits its first stroke"}
             </span>
             <div className="flex items-center gap-2">
               <button
