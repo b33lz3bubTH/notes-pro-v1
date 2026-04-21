@@ -13,15 +13,6 @@ const MONTHS = [
 ];
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-const fortunes = [
-  "A raven brings tidings from distant shores.",
-  "Beware the ides — but rejoice in thy ink.",
-  "He who inscribeth wisely, remembereth long.",
-  "The quill is mightier than the broadsword.",
-  "Fortune favours the diligent scribe.",
-  "By candlelight, truth findeth its parchment.",
-];
-
 const Index = () => {
   const navigate = useNavigate();
   const [notes, setNotes] = useState<Note[]>([]);
@@ -67,10 +58,7 @@ const Index = () => {
     return { totalMedia, words, todayCount };
   }, [notes]);
 
-  const fortune = useMemo(
-    () => fortunes[now.getDate() % fortunes.length],
-    [now],
-  );
+  const lastEntry = notes[0]?.updatedAt;
   const hour = now.getHours();
   const period =
     hour < 6 ? { label: "Matins", icon: Moon }
@@ -92,8 +80,10 @@ const Index = () => {
               <PeriodIcon className="w-3.5 h-3.5" />
               {period.label} · {dateStr}
             </span>
-            <span className="hidden md:inline italic body-text normal-case tracking-normal text-sm text-crimson">
-              &ldquo;{fortune}&rdquo;
+            <span className="hidden md:inline body-text normal-case tracking-normal text-xs text-ink-faded">
+              {lastEntry
+                ? `Last inscribed ${new Date(lastEntry).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`
+                : "An empty codex awaits its first stroke"}
             </span>
             <div className="flex items-center gap-2">
               <button
@@ -171,7 +161,7 @@ const Index = () => {
           <div className="flex items-end justify-between pb-2 border-b border-double border-gold-deep/50">
             <h2 className="blackletter text-2xl md:text-3xl text-ink leading-none flex items-baseline gap-3">
               <span className="text-gold-deep text-xl leading-none" aria-hidden>&#10087;</span>
-              {query ? "Search Results" : "Today's Chronicle"}
+              {query ? `Results for "${query}"` : "Thy Scrolls"}
             </h2>
             <span className="text-[10px] uppercase tracking-[0.3em] text-ink-faded pb-1">
               {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
@@ -195,10 +185,10 @@ const Index = () => {
             <div className="fleuron-rule text-gold-deep/60 max-w-[12rem] mx-auto">
               <span aria-hidden>&#10086;</span>
             </div>
-            <p className="italic text-ink-faded body-text drop-cap text-left">
+            <p className="italic text-ink-faded body-text">
               {query
-                ? "Seek with different words, good scribe — perhaps thy memory hath played thee false."
-                : "Take up thy quill and inscribe thy first thought. Every codex beginneth with a single stroke of ink upon blank vellum."}
+                ? "No scroll bears those words."
+                : "Begin thy first inscription, sealed within this browser alone."}
             </p>
             {!query && (
               <button

@@ -7,9 +7,18 @@ const enc = new TextEncoder();
 const dec = new TextDecoder();
 
 export function randomBytes(n: number): Uint8Array {
-  const b = new Uint8Array(n);
+  const b = new Uint8Array(new ArrayBuffer(n));
   crypto.getRandomValues(b);
   return b;
+}
+
+// Force a Uint8Array backed by a real ArrayBuffer (not SharedArrayBuffer)
+// so it satisfies BufferSource / BlobPart in strict TS lib definitions.
+function toBuf(u: Uint8Array): Uint8Array<ArrayBuffer> {
+  const ab = new ArrayBuffer(u.byteLength);
+  const out = new Uint8Array(ab);
+  out.set(u);
+  return out as Uint8Array<ArrayBuffer>;
 }
 
 export const generateSalt = () => randomBytes(SALT_BYTES);
@@ -27,7 +36,7 @@ export async function deriveKey(
     ["deriveKey"],
   );
   return crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+    { name: "PBKDF2", salt: toBuf(salt), iterations, hash: "SHA-256" },
     baseKey,
     { name: "AES-GCM", length: KEY_BITS },
     true,
@@ -36,25 +45,25 @@ export async function deriveKey(
 }
 
 function packIvAndCipher(iv: Uint8Array, cipher: ArrayBuffer): Uint8Array {
-  const out = new Uint8Array(iv.byteLength + cipher.byteLength);
+  const out = new Uint8Array(new ArrayBuffer(iv.byteLength + cipher.byteLength));
   out.set(iv, 0);
   out.set(new Uint8Array(cipher), iv.byteLength);
   return out;
 }
 
 function unpackIvAndCipher(buf: Uint8Array): { iv: Uint8Array; cipher: Uint8Array } {
-  return { iv: buf.slice(0, IV_BYTES), cipher: buf.slice(IV_BYTES) };
+  return { iv: toBuf(buf.slice(0, IV_BYTES)), cipher: toBuf(buf.slice(IV_BYTES)) };
 }
 
 export async function encryptBytes(key: CryptoKey, plaintext: Uint8Array): Promise<Uint8Array> {
   const iv = randomBytes(IV_BYTES);
-  const cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plaintext);
+  const cipher = await crypto.subtle.encrypt({ name: "AES-GCM", iv: toBuf(iv) }, key, toBuf(plaintext));
   return packIvAndCipher(iv, cipher);
 }
 
 export async function decryptBytes(key: CryptoKey, payload: Uint8Array): Promise<Uint8Array> {
   const { iv, cipher } = unpackIvAndCipher(payload);
-  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, cipher);
+  const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: toBuf(iv) }, key, toBuf(cipher));
   return new Uint8Array(plain);
 }
 
@@ -70,7 +79,7 @@ export async function decryptString(key: CryptoKey, payload: Uint8Array): Promis
 export async function encryptBlob(key: CryptoKey, blob: Blob): Promise<Blob> {
   const buf = new Uint8Array(await blob.arrayBuffer());
   const payload = await encryptBytes(key, buf);
-  return new Blob([payload], { type: "application/octet-stream" });
+  return new Blob([toBuf(payload)], { type: "application/octet-stream" });
 }
 
 export async function decryptBlob(
@@ -80,7 +89,7 @@ export async function decryptBlob(
 ): Promise<Blob> {
   const buf = new Uint8Array(await encrypted.arrayBuffer());
   const plain = await decryptBytes(key, buf);
-  return new Blob([plain], { type: mime });
+  return new Blob([toBuf(plain)], { type: mime });
 }
 
 export function bytesToHex(bytes: Uint8Array): string {
@@ -105,7 +114,7 @@ export async function importRawKey(hex: string): Promise<CryptoKey> {
   const raw = hexToBytes(hex);
   return crypto.subtle.importKey(
     "raw",
-    raw,
+    toBuf(raw),
     { name: "AES-GCM", length: KEY_BITS },
     true,
     ["encrypt", "decrypt"],
