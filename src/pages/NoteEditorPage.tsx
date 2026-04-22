@@ -16,21 +16,18 @@ import {
   Paperclip,
   Save,
   ArrowLeft,
-  Feather,
   Trash2,
   ExternalLink,
-  ClipboardPaste,
+  ImagePlus,
 } from "lucide-react";
 import { toast } from "sonner";
 
-const MONTHS = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December",
-];
-
 const fmtFull = (t: number) => {
   const d = new Date(t);
-  return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()} · ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}`;
+  return d.toLocaleString([], {
+    day: "numeric", month: "short", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
 };
 
 const extFromMime = (mime: string) => {
@@ -70,7 +67,7 @@ const NoteEditorPage = () => {
       const n = await getNote(id!);
       if (cancelled) return;
       if (!n) {
-        toast.error("Scroll not found");
+        toast.error("Note not found");
         navigate("/", { replace: true });
         return;
       }
@@ -97,9 +94,7 @@ const NoteEditorPage = () => {
     }
     setMedia((prev) => [...prev, ...added]);
     setDirty(true);
-    toast.success(
-      `${added.length} ${added.length > 1 ? "relics" : "relic"} affixed`,
-    );
+    toast.success(`${added.length} ${added.length > 1 ? "files" : "file"} attached`);
   }, []);
 
   const handleAttach = (files: FileList | null) => {
@@ -107,14 +102,12 @@ const NoteEditorPage = () => {
     void ingestFiles(Array.from(files));
   };
 
-  // Paste handler — supports clipboard images (snipping tool, screenshot)
-  // and copied files. Falls back silently if clipboard contains only text.
+  // Paste: clipboard images (snipping tool) and copied files
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       const dt = e.clipboardData;
       if (!dt) return;
       const out: File[] = [];
-      // Files take priority (e.g. copied from file explorer)
       if (dt.files && dt.files.length) {
         for (const f of Array.from(dt.files)) out.push(f);
       } else if (dt.items) {
@@ -122,7 +115,6 @@ const NoteEditorPage = () => {
           if (item.kind !== "file") continue;
           const blob = item.getAsFile();
           if (!blob) continue;
-          // Snipping tool / screenshots arrive without a filename
           const named =
             blob.name && blob.name !== "image.png"
               ? blob
@@ -142,7 +134,7 @@ const NoteEditorPage = () => {
     return () => window.removeEventListener("paste", onPaste);
   }, [ingestFiles]);
 
-  // Drag & drop on the page
+  // Drag & drop
   useEffect(() => {
     let depth = 0;
     const onEnter = (e: DragEvent) => {
@@ -187,13 +179,13 @@ const NoteEditorPage = () => {
       const mediaIds = media.map((m) => m.id);
       if (isNew) {
         const created = await createNote({ title, body, mediaIds });
-        toast.success(`Inscribed: ${created.title}`);
+        toast.success(`Saved: ${created.title}`);
         setDirty(false);
         navigate(`/note/${created.id}`, { replace: true });
       } else {
         const updated = await updateNote(id!, { title, body, mediaIds });
         if (updated) setNote(updated);
-        toast.success("Manuscript preserved");
+        toast.success("Saved");
         setDirty(false);
       }
     } finally {
@@ -203,18 +195,18 @@ const NoteEditorPage = () => {
 
   const handleDelete = async () => {
     if (!note) return;
-    if (!confirm(`Cast "${note.title}" into the flames?`)) return;
+    if (!confirm(`Delete "${note.title}"? This cannot be undone.`)) return;
     await deleteNote(note.id);
-    toast.success("The scroll burns to ash");
+    toast.success("Deleted");
     navigate("/");
   };
 
   const handleBack = () => {
-    if (dirty && !confirm("Thou hast unsaved changes. Leave anyway?")) return;
+    if (dirty && !confirm("You have unsaved changes. Leave anyway?")) return;
     navigate("/");
   };
 
-  // Keyboard shortcuts
+  // Shortcuts
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
@@ -228,7 +220,6 @@ const NoteEditorPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title, body, media, dirty]);
 
-  // Warn on tab close with unsaved
   useEffect(() => {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
       if (dirty) { e.preventDefault(); e.returnValue = ""; }
@@ -242,130 +233,125 @@ const NoteEditorPage = () => {
 
   if (!loaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-ink-faded text-sm uppercase tracking-[0.3em]">
-        Unfurling scroll...
+      <div className="min-h-screen flex items-center justify-center mono text-xs text-muted-foreground tracking-widest">
+        loading…
       </div>
     );
   }
 
   return (
     <div className="min-h-screen relative">
-      {/* Top bar */}
-      <header className="sticky top-0 z-20 border-b-2 border-ink/50 bg-background/95 backdrop-blur">
-        <div className="container max-w-4xl mx-auto px-4 py-2 flex items-center gap-2">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] text-ink hover:text-crimson transition px-2 py-1.5"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            Codex
-          </button>
-
-          <div className="flex-1 text-center text-[10px] uppercase tracking-[0.3em] text-ink-faded">
-            <span className="flex items-center justify-center gap-2">
-              <Feather className="w-3 h-3" />
-              {isNew ? "New Scroll" : "Amend Scroll"}
-              {dirty && <span className="text-crimson">· unsaved</span>}
-            </span>
-            {note && (
-              <div className="text-[9px] tracking-[0.2em] text-ink-faded/70 mt-0.5 hidden sm:block">
-                Updated {fmtFull(note.updatedAt)}
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <ThemeToggle />
-            {!isNew && note && (
-              <a
-                href={`/note/${note.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Open in new tab"
-                className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-ink/40 bg-parchment-light/60 text-ink hover:bg-parchment-dark hover:border-crimson transition"
-              >
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            )}
-            {!isNew && (
-              <button
-                onClick={handleDelete}
-                title="Burn this scroll"
-                className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-ink/40 bg-parchment-light/60 text-crimson hover:bg-crimson hover:text-gold-pale transition"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            )}
+      {/* Floating glass header */}
+      <header className="sticky top-0 z-30">
+        <div className="container max-w-3xl mx-auto px-4 md:px-6 pt-4">
+          <div className="glass rounded-2xl px-3 py-2 flex items-center gap-2">
             <button
-              onClick={handleSave}
-              disabled={saving || (!dirty && !isNew)}
-              className="btn-ink px-4 py-1.5 rounded-sm flex items-center gap-1.5 text-[11px] disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleBack}
+              className="btn btn-ghost px-3 py-1.5 text-xs"
             >
-              <Save className="w-3.5 h-3.5" />
-              {saving ? "Sealing..." : isNew ? "Seal" : "Re-Seal"}
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Back</span>
             </button>
+
+            <div className="flex-1 text-center min-w-0">
+              <div className="small-caps text-[10px] text-muted-foreground flex items-center justify-center gap-2">
+                {isNew ? "New note" : "Editing"}
+                {dirty && <span className="wax-dot" style={{ width: 6, height: 6, boxShadow: "none" }} />}
+                {dirty && <span className="text-crimson normal-case tracking-normal">unsaved</span>}
+              </div>
+              {note && (
+                <div className="mono text-[10px] text-muted-foreground/70 mt-0.5 truncate hidden sm:block">
+                  Updated {fmtFull(note.updatedAt)}
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <ThemeToggle />
+              {!isNew && note && (
+                <a
+                  href={`/note/${note.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="Open in new tab"
+                  className="w-9 h-9 inline-flex items-center justify-center rounded-full glass-subtle text-foreground hover:border-crimson/50 transition"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              )}
+              {!isNew && (
+                <button
+                  onClick={handleDelete}
+                  title="Delete"
+                  className="w-9 h-9 inline-flex items-center justify-center rounded-full glass-subtle text-crimson hover:bg-crimson hover:text-background hover:border-crimson transition"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                onClick={handleSave}
+                disabled={saving || (!dirty && !isNew)}
+                className="btn btn-wax px-4 py-2 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Save className="w-3.5 h-3.5" />
+                {saving ? "Saving…" : "Save"}
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Manuscript page */}
-      <main className="container max-w-4xl mx-auto px-4 py-6">
-        <div
-          className="parchment rounded-sm p-6 md:p-10 animate-page space-y-5"
-        >
-          {/* Title */}
-          <div>
-            <label className="block text-[10px] uppercase tracking-[0.3em] text-crimson mb-1">
-              Heading
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => { setTitle(e.target.value); markDirty(); }}
-              placeholder="Leave blank for an untitled scroll..."
-              className="w-full bg-transparent border-0 border-b border-ink/40 px-0 py-2 text-3xl md:text-4xl font-semibold text-ink placeholder:text-ink-faded/50 placeholder:font-normal placeholder:italic placeholder:text-xl focus:outline-none focus:border-crimson transition"
-              autoFocus={isNew}
-            />
+      {/* Editor canvas */}
+      <main className="container max-w-3xl mx-auto px-4 md:px-6 py-8">
+        <div className="animate-fade-up space-y-6">
+          {/* Title — borderless, big, magazine-like */}
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => { setTitle(e.target.value); markDirty(); }}
+            placeholder="Untitled"
+            className="w-full bg-transparent border-0 px-0 py-2 display-serif text-4xl md:text-5xl font-semibold text-foreground placeholder:text-muted-foreground/40 placeholder:font-normal focus:outline-none text-balance"
+            autoFocus={isNew}
+          />
+
+          {/* Meta strip */}
+          <div className="flex flex-wrap items-center gap-3 mono text-[11px] text-muted-foreground border-y border-border/50 py-2">
+            <span>{wc} words</span>
+            <span className="text-border">·</span>
+            <span>{cc} chars</span>
+            {media.length > 0 && (
+              <>
+                <span className="text-border">·</span>
+                <span>{media.length} attachment{media.length > 1 ? "s" : ""}</span>
+              </>
+            )}
+            <span className="ml-auto hidden sm:inline">⌘S save · ESC back · ⌘V paste</span>
           </div>
 
-          {/* Body */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="text-[10px] uppercase tracking-[0.3em] text-crimson">
-                Body of the Note
-              </label>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-ink-faded">
-                {wc} words · {cc} chars
-              </span>
-            </div>
-            <textarea
-              value={body}
-              onChange={(e) => { setBody(e.target.value); markDirty(); }}
-              placeholder="Inscribe thy thoughts here, by quill and candlelight..."
-              className="w-full bg-parchment-light/60 border border-ink/30 rounded-[2px] px-4 py-3 text-lg leading-relaxed text-ink placeholder:text-ink-faded/50 focus:outline-none focus:border-crimson focus:bg-parchment-light/90 resize-y body-text transition"
-              style={{ fontFamily: "'Cormorant Garamond', serif", minHeight: "420px" }}
-            />
-          </div>
+          {/* Body — clean canvas */}
+          <textarea
+            value={body}
+            onChange={(e) => { setBody(e.target.value); markDirty(); }}
+            placeholder="Start writing…"
+            className="w-full bg-transparent border-0 px-0 py-2 body-text text-lg leading-[1.75] text-foreground placeholder:text-muted-foreground/40 focus:outline-none resize-none"
+            style={{ minHeight: "520px" }}
+          />
 
-          {/* Media */}
-          <div>
-            <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-              <label className="text-[10px] uppercase tracking-[0.3em] text-crimson">
-                Affixed Relics {media.length > 0 && <span className="text-ink-faded ml-1">({media.length})</span>}
-              </label>
-              <div className="flex items-center gap-2">
-                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.2em] text-ink-faded">
-                  <ClipboardPaste className="w-3 h-3" />
-                  Paste · Drop · Attach
-                </span>
-                <button
-                  onClick={() => fileRef.current?.click()}
-                  className="text-[10px] uppercase tracking-[0.2em] px-3 py-1.5 bg-parchment-dark/60 border border-ink/40 rounded-sm hover:bg-parchment-dark hover:border-crimson text-ink flex items-center gap-1.5 transition"
-                >
-                  <Paperclip className="w-3 h-3" />
-                  Attach
-                </button>
-              </div>
+          {/* Attachments */}
+          <div className="space-y-3 pt-2 border-t border-border/50">
+            <div className="flex items-center justify-between">
+              <h3 className="small-caps text-[10px] text-muted-foreground flex items-center gap-2">
+                <Paperclip className="w-3 h-3" />
+                Attachments
+                {media.length > 0 && <span className="mono normal-case tracking-normal text-muted-foreground/70">({media.length})</span>}
+              </h3>
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="btn btn-ghost px-3 py-1.5 text-xs"
+              >
+                <ImagePlus className="w-3.5 h-3.5" />
+                Add
+              </button>
               <input
                 ref={fileRef}
                 type="file"
@@ -375,8 +361,9 @@ const NoteEditorPage = () => {
                 onChange={(e) => { handleAttach(e.target.files); e.target.value = ""; }}
               />
             </div>
+
             {media.length > 0 ? (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
                 {media.map((m) => (
                   <MediaThumb key={m.id} media={m} onRemove={() => removeMedia(m.id)} />
                 ))}
@@ -384,26 +371,22 @@ const NoteEditorPage = () => {
             ) : (
               <button
                 onClick={() => fileRef.current?.click()}
-                className="w-full text-center text-sm italic text-ink-faded py-6 border border-dashed border-ink/30 rounded-[2px] hover:border-crimson hover:text-crimson transition body-text"
+                className="w-full text-center mono text-[11px] text-muted-foreground py-8 rounded-xl border border-dashed border-border hover:border-crimson/50 hover:text-foreground transition"
               >
-                No relics affixed — click, drop a file, or paste an image (⌘V)
+                drop files · paste images (⌘V) · or click to browse
               </button>
             )}
-          </div>
-
-          <div className="text-center text-[10px] uppercase tracking-[0.3em] text-ink-faded pt-2 border-t border-ink/20">
-            ⌘S to seal · ESC for the codex · ⌘V to paste images
           </div>
         </div>
       </main>
 
       {/* Drag overlay */}
       {dragOver && (
-        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center bg-ink/40 backdrop-blur-sm">
-          <div className="parchment px-8 py-6 rounded-sm border-2 border-dashed border-crimson text-center">
+        <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center bg-background/60 backdrop-blur-sm animate-fade-in">
+          <div className="glass-strong rounded-2xl px-8 py-6 border-2 border-dashed border-crimson/60 text-center">
             <Paperclip className="w-8 h-8 text-crimson mx-auto mb-2" />
-            <div className="text-sm uppercase tracking-[0.3em] text-ink">
-              Release to affix as a relic
+            <div className="small-caps text-xs text-foreground">
+              Drop to attach
             </div>
           </div>
         </div>

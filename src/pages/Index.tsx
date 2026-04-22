@@ -3,22 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { deleteNote, listNotes, type Note } from "@/lib/db";
 import { NoteCard } from "@/components/NoteCard";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Plus, Search, Shield, Scroll, Feather, Sun, Moon, Lock } from "lucide-react";
+import { Plus, Search, Feather, Lock, BookOpen, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { lockVault } from "@/lib/vault";
-
-const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-];
-const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const Index = () => {
   const navigate = useNavigate();
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const [now, setNow] = useState(new Date());
 
   const refresh = async () => {
     setLoading(true);
@@ -27,11 +20,24 @@ const Index = () => {
     setLoading(false);
   };
 
+  useEffect(() => { refresh(); }, []);
+
+  // ⌘K focuses search; ⌘N creates a new note
   useEffect(() => {
-    refresh();
-    const t = setInterval(() => setNow(new Date()), 1000 * 30);
-    return () => clearInterval(t);
-  }, []);
+    const onKey = (e: KeyboardEvent) => {
+      const meta = e.ctrlKey || e.metaKey;
+      if (meta && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        document.getElementById("global-search")?.focus();
+      }
+      if (meta && e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        navigate("/note/new");
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [navigate]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -42,9 +48,9 @@ const Index = () => {
   }, [notes, query]);
 
   const handleDelete = async (n: Note) => {
-    if (!confirm(`Cast "${n.title}" into the flames?`)) return;
+    if (!confirm(`Delete "${n.title}"? This cannot be undone.`)) return;
     await deleteNote(n.id);
-    toast.success("The scroll burns to ash");
+    toast.success("Note deleted");
     refresh();
   };
 
@@ -58,177 +64,171 @@ const Index = () => {
     return { totalMedia, words, todayCount };
   }, [notes]);
 
-  const lastEntry = notes[0]?.updatedAt;
-  const hour = now.getHours();
-  const period =
-    hour < 6 ? { label: "Matins", icon: Moon }
-    : hour < 12 ? { label: "Prime", icon: Sun }
-    : hour < 18 ? { label: "Sext", icon: Sun }
-    : { label: "Vespers", icon: Moon };
-  const PeriodIcon = period.icon;
-
-  const dateStr = `${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]}`;
-
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Newspaper masthead */}
-      <header>
-        <div className="container max-w-5xl mx-auto px-6 md:px-10 pt-4 pb-2 border-b-4 border-double border-ink/70">
-          {/* Top strip: date | fortune | theme toggle */}
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-widest text-ink-faded border-b border-ink/30 pb-2 mb-3">
-            <span className="flex items-center gap-1.5">
-              <PeriodIcon className="w-3.5 h-3.5" />
-              {period.label} · {dateStr}
-            </span>
-            <span className="hidden md:inline body-text normal-case tracking-normal text-xs text-ink-faded">
-              {lastEntry
-                ? `Last inscribed ${new Date(lastEntry).toLocaleString([], { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`
-                : "An empty codex awaits its first stroke"}
-            </span>
-            <div className="flex items-center gap-2">
+      {/* Floating glass header */}
+      <header className="sticky top-0 z-30">
+        <div className="container max-w-6xl mx-auto px-5 md:px-8 pt-4">
+          <div className="glass rounded-2xl px-4 md:px-5 py-3 flex items-center gap-3">
+            <div className="flex items-center gap-2.5 shrink-0">
+              <span className="wax-seal" style={{ width: "2rem", height: "2rem" }}>
+                <Feather className="w-3.5 h-3.5" />
+              </span>
+              <div className="hidden sm:flex flex-col leading-tight">
+                <span className="display-serif text-base text-foreground font-semibold">The Codex</span>
+                <span className="mono text-[10px] text-muted-foreground">private · local · yours</span>
+              </div>
+            </div>
+
+            <div className="relative flex-1 max-w-xl mx-auto">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+              <input
+                id="global-search"
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search notes…"
+                className="field pl-10 pr-14 py-2 rounded-full"
+              />
+              <kbd className="hidden sm:inline-flex absolute right-2.5 top-1/2 -translate-y-1/2 items-center gap-0.5 mono text-[10px] px-1.5 py-0.5 rounded-md bg-surface-3 text-muted-foreground border border-border">
+                ⌘K
+              </kbd>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 onClick={() => lockVault()}
-                className="w-8 h-8 rounded-full border border-ink/30 flex items-center justify-center text-ink-faded hover:text-crimson hover:border-crimson transition"
-                aria-label="Re-seal the codex"
-                title="Re-seal the codex"
+                title="Lock the codex"
+                aria-label="Lock"
+                className="w-9 h-9 inline-flex items-center justify-center rounded-full glass-subtle text-foreground hover:border-crimson/50 transition"
               >
-                <Lock className="w-3.5 h-3.5" />
+                <Lock className="w-4 h-4" />
               </button>
               <ThemeToggle />
+              <button
+                onClick={() => navigate("/note/new")}
+                className="btn btn-wax px-4 py-2 text-sm"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">New note</span>
+              </button>
             </div>
-          </div>
-
-          {/* Title block */}
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-3 text-crimson text-[10px] uppercase tracking-[0.4em] mb-1">
-              <span>· Vol. I ·</span>
-              <span>No. {notes.length || "I"}</span>
-              <span>· Est. MMXXV ·</span>
-            </div>
-            <h1 className="blackletter text-5xl md:text-7xl text-ink leading-none">
-              The Scribe's Codex
-            </h1>
-            <div className="flex items-center justify-center gap-3 mt-2 text-[10px] uppercase tracking-[0.35em] text-ink-faded">
-              <span className="flex-1 h-px bg-gradient-to-r from-transparent via-gold-deep/60 to-transparent" />
-              <span className="flex items-center gap-1.5">
-                <Shield className="w-3 h-3 text-forest" />
-                Privatus · Offline · Sealed by Browser
-              </span>
-              <span className="flex-1 h-px bg-gradient-to-r from-transparent via-gold-deep/60 to-transparent" />
-            </div>
-            <div className="fleuron-rule mt-3 text-gold-deep/80">
-              <span aria-hidden>&#10086;</span>
-            </div>
-          </div>
-
-          {/* Stats bar */}
-          <div className="grid grid-cols-3 md:grid-cols-5 gap-px mt-3 bg-ink/30 border border-ink/30 text-center">
-            <Stat label="Scrolls" value={notes.length} />
-            <Stat label="Words" value={stats.words.toLocaleString()} />
-            <Stat label="Relics" value={stats.totalMedia} />
-            <Stat label="This Day" value={stats.todayCount} />
-            <Stat label="Hour" value={now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} />
           </div>
         </div>
       </header>
 
-      {/* Toolbar */}
-      <div>
-        <div className="container max-w-5xl mx-auto px-6 md:px-10 py-3 flex flex-col sm:flex-row gap-2 items-stretch border-b-2 border-ink/40 bg-parchment-dark/30">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-faded pointer-events-none" />
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Seek among the scrolls..."
-              className="w-full bg-parchment-light/80 border border-ink/40 rounded-sm pl-9 pr-3 py-2 text-ink placeholder:text-ink-faded/60 focus:outline-none focus:border-crimson"
-            />
+      {/* Hero */}
+      <section className="container max-w-6xl mx-auto px-5 md:px-8 pt-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+          <div className="bento md:col-span-2 p-6 md:p-8 flex flex-col justify-between min-h-[200px]">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Sparkles className="w-3.5 h-3.5 text-crimson" />
+              <span className="small-caps text-[10px]">Liminal Codex</span>
+            </div>
+            <div className="mt-3">
+              <h1 className="display-serif text-3xl md:text-4xl text-foreground leading-[1.1] text-balance">
+                A quiet place for thinking,
+                <span className="italic text-crimson"> sealed in your browser.</span>
+              </h1>
+              <p className="body-text text-muted-foreground mt-3 max-w-xl text-pretty">
+                {notes.length === 0
+                  ? "An empty page waiting for your first thought. Press ⌘N to begin."
+                  : `${notes.length} note${notes.length === 1 ? "" : "s"} kept locally. Nothing leaves this device.`}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 mt-5">
+              <button onClick={() => navigate("/note/new")} className="btn btn-primary px-4 py-2 text-sm">
+                <Plus className="w-4 h-4" /> New note
+                <kbd className="ml-1 mono text-[10px] px-1.5 py-0.5 rounded bg-background/20 border border-background/30">⌘N</kbd>
+              </button>
+              <span className="mono text-[11px] text-muted-foreground ml-1">
+                ⌘V paste · drag · drop
+              </span>
+            </div>
           </div>
-          <button
-            onClick={() => navigate("/note/new")}
-            className="btn-ink px-5 py-2 rounded-sm flex items-center justify-center gap-2 text-sm whitespace-nowrap"
-          >
-            <Plus className="w-4 h-4" />
-            New Scroll
-          </button>
+
+          <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-rows-2">
+            <StatTile label="Notes" value={notes.length} />
+            <StatTile label="Words" value={stats.words.toLocaleString()} />
+            <StatTile label="Media" value={stats.totalMedia} />
+            <StatTile label="Today" value={stats.todayCount} accent />
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* Notes grid */}
-      <main className="container max-w-5xl mx-auto px-6 md:px-10 py-6 flex-1 w-full">
-        <div className="mb-4">
-          <div className="flex items-end justify-between pb-2 border-b border-double border-gold-deep/50">
-            <h2 className="blackletter text-2xl md:text-3xl text-ink leading-none flex items-baseline gap-3">
-              <span className="text-gold-deep text-xl leading-none" aria-hidden>&#10087;</span>
-              {query ? `Results for "${query}"` : "Thy Scrolls"}
-            </h2>
-            <span className="text-[10px] uppercase tracking-[0.3em] text-ink-faded pb-1">
-              {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
-            </span>
-          </div>
-          <div className="fleuron-rule mt-2 text-gold-deep/70">
-            <span aria-hidden>&#10086;</span>
-          </div>
+      <main className="container max-w-6xl mx-auto px-5 md:px-8 py-8 flex-1 w-full">
+        <div className="flex items-end justify-between mb-4">
+          <h2 className="display-serif text-xl text-foreground flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-muted-foreground" />
+            {query ? `Results for "${query}"` : "Your notes"}
+          </h2>
+          <span className="mono text-[11px] text-muted-foreground">
+            {filtered.length} {filtered.length === 1 ? "note" : "notes"}
+          </span>
         </div>
 
         {loading ? (
-          <p className="text-center tracking-widest text-ink-faded py-16 text-sm uppercase">
-            Unfurling thy scrolls...
-          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="bento h-48 animate-pulse"
+                style={{ animationDelay: `${i * 60}ms` }}
+              />
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
-          <div className="parchment max-w-xl mx-auto rounded-sm p-8 text-center space-y-4 relative">
-            <Scroll className="w-12 h-12 text-crimson/70 mx-auto" />
-            <h3 className="text-2xl text-ink">
-              {query ? "No scroll matcheth thy query" : "Thy codex lieth empty"}
-            </h3>
-            <div className="fleuron-rule text-gold-deep/60 max-w-[12rem] mx-auto">
-              <span aria-hidden>&#10086;</span>
+          <div className="bento max-w-xl mx-auto p-10 text-center space-y-4">
+            <div className="mx-auto wax-seal animate-seal">
+              <Feather className="w-4 h-4" />
             </div>
-            <p className="italic text-ink-faded body-text">
+            <h3 className="display-serif text-2xl text-foreground">
+              {query ? "Nothing matches that search" : "Your codex is empty"}
+            </h3>
+            <p className="body-text text-muted-foreground">
               {query
-                ? "No scroll bears those words."
-                : "Begin thy first inscription, sealed within this browser alone."}
+                ? "Try a different word, or clear the search to see everything."
+                : "Start writing. Paste a screenshot. Drop a file. Everything stays on this device."}
             </p>
             {!query && (
               <button
                 onClick={() => navigate("/note/new")}
-                className="btn-gilded px-5 py-2 rounded-sm inline-flex items-center gap-2 text-sm"
+                className="btn btn-wax px-5 py-2.5 text-sm mx-auto"
               >
                 <Feather className="w-4 h-4" />
-                Begin the First Scroll
+                Write the first note
               </button>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((n) => (
-              <NoteCard
-                key={n.id}
-                note={n}
-                onDelete={() => handleDelete(n)}
-              />
+              <NoteCard key={n.id} note={n} onDelete={() => handleDelete(n)} />
             ))}
           </div>
         )}
       </main>
 
-      <footer className="mt-auto">
-        <div className="container max-w-5xl mx-auto px-6 md:px-10 py-3 flex flex-wrap items-center justify-between gap-2 text-[10px] uppercase tracking-[0.3em] text-ink-faded border-t-4 border-double border-ink/70">
-          <span>Printed by Quill &amp; Candlelight</span>
-          <span className="text-crimson">· Soli Deo Gloria ·</span>
-          <span>Stored within thy Browser</span>
+      <footer className="mt-auto border-t border-border/50">
+        <div className="container max-w-6xl mx-auto px-5 md:px-8 py-4 flex flex-wrap items-center justify-between gap-2 mono text-[11px] text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <span className="wax-dot" />
+            Encrypted in your browser
+          </span>
+          <span className="hidden sm:inline">⌘K search · ⌘N new · ⌘V paste · ⌘S save</span>
+          <span>The Codex · MMXXVI</span>
         </div>
       </footer>
     </div>
   );
 };
 
-const Stat = ({ label, value }: { label: string; value: string | number }) => (
-  <div className="bg-parchment-light/80 px-2 py-2">
-    <div className="text-lg md:text-xl text-crimson leading-none">{value}</div>
-    <div className="text-[9px] md:text-[10px] uppercase tracking-[0.2em] text-ink-faded mt-1">
-      {label}
+const StatTile = ({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) => (
+  <div className="bento p-4 flex flex-col justify-between min-h-[88px]">
+    <span className="small-caps text-[10px] text-muted-foreground">{label}</span>
+    <div className={`display-serif text-3xl md:text-4xl mt-2 leading-none ${accent ? "text-crimson" : "text-foreground"}`}>
+      {value}
     </div>
   </div>
 );
