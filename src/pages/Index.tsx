@@ -1,11 +1,35 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { deleteNote, listNotes, type Note } from "@/lib/db";
 import { NoteCard } from "@/components/NoteCard";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Plus, Search, Feather, Lock, BookOpen, Sparkles } from "lucide-react";
+import { Plus, Search, Feather, Lock, BookOpen, ScrollText, Quote } from "lucide-react";
 import { toast } from "sonner";
 import { lockVault } from "@/lib/vault";
+
+const ROMAN = [
+  ["M", 1000], ["CM", 900], ["D", 500], ["CD", 400],
+  ["C", 100], ["XC", 90], ["L", 50], ["XL", 40],
+  ["X", 10], ["IX", 9], ["V", 5], ["IV", 4], ["I", 1],
+] as const;
+const toRoman = (n: number) => {
+  let s = ""; let v = n;
+  for (const [sym, val] of ROMAN) { while (v >= (val as number)) { s += sym; v -= val as number; } }
+  return s;
+};
+const LATIN_MONTHS = [
+  "Ianuarius","Februarius","Martius","Aprilis","Maius","Iunius",
+  "Iulius","Augustus","September","October","November","December",
+];
+const LATIN_DAYS = ["Dies Solis","Dies Lunae","Dies Martis","Dies Mercurii","Dies Iovis","Dies Veneris","Dies Saturni"];
+
+const PROVERBS = [
+  { la: "Verba volant, scripta manent.", en: "Spoken words fly; written words remain." },
+  { la: "Littera scripta manet.", en: "The written letter endures." },
+  { la: "Nulla dies sine linea.", en: "Not a day without a line." },
+  { la: "Festina lente.", en: "Make haste, slowly." },
+  { la: "Memoria minuitur nisi eam exerceas.", en: "Memory fades unless exercised." },
+];
 
 const Index = () => {
   const navigate = useNavigate();
