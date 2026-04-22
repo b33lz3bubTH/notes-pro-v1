@@ -223,7 +223,8 @@ const Index = () => {
 };
 
 const StatTile = ({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) => (
-  <div className={`bento col-span-6 md:col-span-${accent ? "2" : "2"} sm:col-span-3 md:col-span-${accent ? "" : ""} p-4 flex flex-col justify-between min-h-[88px] md:min-h-[180px] ${accent ? "" : ""}`.replace("md:col-span-", "md:col-span-")}>
+  <div className="bento col-span-6 sm:col-span-3 md:col-span-5/3 lg:col-auto p-4 flex flex-col justify-between min-h-[88px] md:min-h-[180px]"
+       style={{ gridColumn: "span 6 / span 6" }}>
     <span className="small-caps text-[10px] text-muted-foreground">{label}</span>
     <div className={`display-serif text-3xl md:text-4xl mt-2 ${accent ? "text-crimson" : "text-foreground"}`}>
       {value}
