@@ -304,13 +304,34 @@ const Index = () => {
   );
 };
 
-const StatTile = ({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) => (
-  <div className="bento p-4 flex flex-col justify-between min-h-[88px]">
-    <span className="small-caps text-[10px] text-muted-foreground">{label}</span>
-    <div className={`display-serif text-3xl md:text-4xl mt-2 leading-none ${accent ? "text-crimson" : "text-foreground"}`}>
-      {value}
+const StatTile = ({
+  label,
+  value,
+  accent,
+  roman,
+}: {
+  label: string;
+  value: string | number;
+  accent?: boolean;
+  roman?: boolean;
+}) => {
+  const numeric = typeof value === "number" ? value : null;
+  const showRoman = roman && numeric !== null && numeric > 0 && numeric < 4000;
+  return (
+    <div className="bento p-4 flex flex-col justify-between min-h-[88px]">
+      <span className="small-caps text-[10px] text-muted-foreground">{label}</span>
+      <div className="mt-2">
+        <div className={`display-serif text-3xl md:text-4xl leading-none ${accent ? "text-crimson" : "text-foreground"}`}>
+          {value}
+        </div>
+        {showRoman && (
+          <div className="mono text-[10px] text-muted-foreground/70 mt-1.5 tracking-wider">
+            {toRoman(numeric!)}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default Index;
