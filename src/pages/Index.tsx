@@ -117,16 +117,16 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Hero / stats bento */}
+      {/* Hero */}
       <section className="container max-w-6xl mx-auto px-5 md:px-8 pt-6">
-        <div className="grid grid-cols-12 gap-3 md:gap-4">
-          <div className="bento col-span-12 md:col-span-7 p-6 md:p-7 flex flex-col justify-between min-h-[180px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+          <div className="bento md:col-span-2 p-6 md:p-8 flex flex-col justify-between min-h-[200px]">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Sparkles className="w-3.5 h-3.5 text-crimson" />
               <span className="small-caps text-[10px]">Liminal Codex</span>
             </div>
-            <div>
-              <h1 className="display-serif text-3xl md:text-4xl text-foreground leading-[1.1] text-balance mt-3">
+            <div className="mt-3">
+              <h1 className="display-serif text-3xl md:text-4xl text-foreground leading-[1.1] text-balance">
                 A quiet place for thinking,
                 <span className="italic text-crimson"> sealed in your browser.</span>
               </h1>
@@ -136,21 +136,23 @@ const Index = () => {
                   : `${notes.length} note${notes.length === 1 ? "" : "s"} kept locally. Nothing leaves this device.`}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 mt-4">
+            <div className="flex flex-wrap items-center gap-2 mt-5">
               <button onClick={() => navigate("/note/new")} className="btn btn-primary px-4 py-2 text-sm">
                 <Plus className="w-4 h-4" /> New note
                 <kbd className="ml-1 mono text-[10px] px-1.5 py-0.5 rounded bg-background/20 border border-background/30">⌘N</kbd>
               </button>
               <span className="mono text-[11px] text-muted-foreground ml-1">
-                ⌘V to paste images · drag files anywhere
+                ⌘V paste · drag · drop
               </span>
             </div>
           </div>
 
-          <StatTile className="col-span-6 md:col-span-5 md:col-start-8" label="Notes" value={notes.length} />
-          <StatTile className="col-span-6 md:col-span-5 md:col-start-8" label="Words" value={stats.words.toLocaleString()} />
-          <StatTile className="col-span-6 md:col-span-5 md:col-start-8" label="Media" value={stats.totalMedia} />
-          <StatTile className="col-span-6 md:col-span-5 md:col-start-8" label="Today" value={stats.todayCount} accent />
+          <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-rows-2">
+            <StatTile label="Notes" value={notes.length} />
+            <StatTile label="Words" value={stats.words.toLocaleString()} />
+            <StatTile label="Media" value={stats.totalMedia} />
+            <StatTile label="Today" value={stats.todayCount} accent />
+          </div>
         </div>
       </section>
 
@@ -223,10 +225,9 @@ const Index = () => {
 };
 
 const StatTile = ({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) => (
-  <div className="bento col-span-6 sm:col-span-3 md:col-span-5/3 lg:col-auto p-4 flex flex-col justify-between min-h-[88px] md:min-h-[180px]"
-       style={{ gridColumn: "span 6 / span 6" }}>
+  <div className="bento p-4 flex flex-col justify-between min-h-[88px]">
     <span className="small-caps text-[10px] text-muted-foreground">{label}</span>
-    <div className={`display-serif text-3xl md:text-4xl mt-2 ${accent ? "text-crimson" : "text-foreground"}`}>
+    <div className={`display-serif text-3xl md:text-4xl mt-2 leading-none ${accent ? "text-crimson" : "text-foreground"}`}>
       {value}
     </div>
   </div>
