@@ -147,10 +147,10 @@ const Index = () => {
             </div>
           </div>
 
-          <StatTile label="Notes" value={notes.length} />
-          <StatTile label="Words" value={stats.words.toLocaleString()} />
-          <StatTile label="Media" value={stats.totalMedia} />
-          <StatTile label="Today" value={stats.todayCount} accent />
+          <StatTile className="col-span-6 md:col-span-5 md:col-start-8" label="Notes" value={notes.length} />
+          <StatTile className="col-span-6 md:col-span-5 md:col-start-8" label="Words" value={stats.words.toLocaleString()} />
+          <StatTile className="col-span-6 md:col-span-5 md:col-start-8" label="Media" value={stats.totalMedia} />
+          <StatTile className="col-span-6 md:col-span-5 md:col-start-8" label="Today" value={stats.todayCount} accent />
         </div>
       </section>
 
