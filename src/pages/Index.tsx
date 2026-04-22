@@ -88,6 +88,12 @@ const Index = () => {
     return { totalMedia, words, todayCount };
   }, [notes]);
 
+  const now = useMemo(() => new Date(), []);
+  const proverb = useMemo(
+    () => PROVERBS[now.getDate() % PROVERBS.length],
+    [now],
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Floating glass header */}
