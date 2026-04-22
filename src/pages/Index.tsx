@@ -1,11 +1,35 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { deleteNote, listNotes, type Note } from "@/lib/db";
 import { NoteCard } from "@/components/NoteCard";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { Plus, Search, Feather, Lock, BookOpen, Sparkles } from "lucide-react";
+import { Plus, Search, Feather, Lock, BookOpen, ScrollText, Quote } from "lucide-react";
 import { toast } from "sonner";
 import { lockVault } from "@/lib/vault";
+
+const ROMAN = [
+  ["M", 1000], ["CM", 900], ["D", 500], ["CD", 400],
+  ["C", 100], ["XC", 90], ["L", 50], ["XL", 40],
+  ["X", 10], ["IX", 9], ["V", 5], ["IV", 4], ["I", 1],
+] as const;
+const toRoman = (n: number) => {
+  let s = ""; let v = n;
+  for (const [sym, val] of ROMAN) { while (v >= (val as number)) { s += sym; v -= val as number; } }
+  return s;
+};
+const LATIN_MONTHS = [
+  "Ianuarius","Februarius","Martius","Aprilis","Maius","Iunius",
+  "Iulius","Augustus","September","October","November","December",
+];
+const LATIN_DAYS = ["Dies Solis","Dies Lunae","Dies Martis","Dies Mercurii","Dies Iovis","Dies Veneris","Dies Saturni"];
+
+const PROVERBS = [
+  { la: "Verba volant, scripta manent.", en: "Spoken words fly; written words remain." },
+  { la: "Littera scripta manet.", en: "The written letter endures." },
+  { la: "Nulla dies sine linea.", en: "Not a day without a line." },
+  { la: "Festina lente.", en: "Make haste, slowly." },
+  { la: "Memoria minuitur nisi eam exerceas.", en: "Memory fades unless exercised." },
+];
 
 const Index = () => {
   const navigate = useNavigate();
@@ -64,6 +88,12 @@ const Index = () => {
     return { totalMedia, words, todayCount };
   }, [notes]);
 
+  const now = useMemo(() => new Date(), []);
+  const proverb = useMemo(
+    () => PROVERBS[now.getDate() % PROVERBS.length],
+    [now],
+  );
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Floating glass header */}
@@ -117,41 +147,91 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Hero */}
+      {/* Hero — illuminated chronicle */}
       <section className="container max-w-6xl mx-auto px-5 md:px-8 pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
-          <div className="bento md:col-span-2 p-6 md:p-8 flex flex-col justify-between min-h-[200px]">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Sparkles className="w-3.5 h-3.5 text-crimson" />
-              <span className="small-caps text-[10px]">Liminal Codex</span>
-            </div>
-            <div className="mt-3">
-              <h1 className="display-serif text-3xl md:text-4xl text-foreground leading-[1.1] text-balance">
-                A quiet place for thinking,
-                <span className="italic text-crimson"> sealed in your browser.</span>
-              </h1>
-              <p className="body-text text-muted-foreground mt-3 max-w-xl text-pretty">
-                {notes.length === 0
-                  ? "An empty page waiting for your first thought. Press ⌘N to begin."
-                  : `${notes.length} note${notes.length === 1 ? "" : "s"} kept locally. Nothing leaves this device.`}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 mt-5">
-              <button onClick={() => navigate("/note/new")} className="btn btn-primary px-4 py-2 text-sm">
-                <Plus className="w-4 h-4" /> New note
-                <kbd className="ml-1 mono text-[10px] px-1.5 py-0.5 rounded bg-background/20 border border-background/30">⌘N</kbd>
-              </button>
-              <span className="mono text-[11px] text-muted-foreground ml-1">
-                ⌘V paste · drag · drop
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4">
+          {/* Left: vellum chronicle */}
+          <div className="vellum lg:col-span-8 p-5 md:p-7">
+            {/* Dateline */}
+            <div className="flex flex-wrap items-center justify-between gap-2 small-caps text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-2">
+                <span className="wax-dot" />
+                {LATIN_DAYS[now.getDay()]} · {now.getDate()} {LATIN_MONTHS[now.getMonth()]}
               </span>
+              <span>Anno Domini · {toRoman(now.getFullYear())}</span>
+            </div>
+            <div className="gold-rule-thick my-3" />
+
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_240px] gap-5 items-start">
+              {/* Illuminated opening */}
+              <div className="min-w-0">
+                <p className="display-serif text-[15px] md:text-[16px] leading-[1.55] text-foreground drop-cap text-pretty">
+                  {notes.length === 0
+                    ? "Here beginneth thy private codex — a quiet place sealed within this very browser. No scribe, no server, no stranger reads what thou dost inscribe. Press ⌘N to set the first quill to vellum."
+                    : `Welcome back, scribe. ${notes.length} ${notes.length === 1 ? "scroll lieth" : "scrolls lie"} kept under wax and key, ${stats.words.toLocaleString()} words inked in all. ${stats.todayCount > 0 ? `${stats.todayCount} ${stats.todayCount === 1 ? "scroll was" : "scrolls were"} touched this very day.` : "None hath been touched this day — perchance now?"}`}
+                </p>
+
+                <div className="flex flex-wrap items-center gap-2 mt-4">
+                  <button onClick={() => navigate("/note/new")} className="btn btn-wax px-4 py-2 text-sm">
+                    <Feather className="w-4 h-4" /> Inscribe new scroll
+                    <kbd className="ml-1 mono text-[10px] px-1.5 py-0.5 rounded bg-background/20 border border-background/30">⌘N</kbd>
+                  </button>
+                  <span className="mono text-[11px] text-muted-foreground ml-1">
+                    ⌘V paste · drag · drop relics
+                  </span>
+                </div>
+              </div>
+
+              {/* Vertical gold divider */}
+              <div className="hidden md:block w-px self-stretch bg-gradient-to-b from-transparent via-gold-deep/40 to-transparent" />
+
+              {/* Recent scrolls — manicule list */}
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 small-caps text-[10px] text-muted-foreground mb-2">
+                  <ScrollText className="w-3 h-3 text-crimson" />
+                  Recent scrolls
+                </div>
+                {notes.length === 0 ? (
+                  <p className="body-text italic text-[13px] text-muted-foreground/70">
+                    None yet inscribed.
+                  </p>
+                ) : (
+                  <ul className="space-y-1.5">
+                    {notes.slice(0, 4).map((n) => (
+                      <li key={n.id} className="text-[13px] leading-snug truncate">
+                        <span className="manicule">❦</span>
+                        <Link
+                          to={`/note/${n.id}`}
+                          className="display-serif text-foreground hover:text-crimson transition-colors"
+                          title={n.title}
+                        >
+                          {n.title || "Untitled"}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            {/* Footer proverb */}
+            <div className="gold-rule mt-5 mb-3" />
+            <div className="flex items-start gap-2 text-[12px] text-muted-foreground">
+              <Quote className="w-3.5 h-3.5 text-gold-deep mt-0.5 shrink-0" />
+              <p className="body-text italic leading-snug">
+                <span className="text-foreground">{proverb.la}</span>
+                <span className="mx-1.5 text-gold-deep">·</span>
+                <span>{proverb.en}</span>
+              </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-rows-2">
-            <StatTile label="Notes" value={notes.length} />
+          {/* Right: tight stat tiles */}
+          <div className="lg:col-span-4 grid grid-cols-2 gap-3 md:gap-4 grid-rows-2">
+            <StatTile label="Scrolls" value={notes.length} roman />
             <StatTile label="Words" value={stats.words.toLocaleString()} />
-            <StatTile label="Media" value={stats.totalMedia} />
-            <StatTile label="Today" value={stats.todayCount} accent />
+            <StatTile label="Relics" value={stats.totalMedia} />
+            <StatTile label="Today" value={stats.todayCount} accent roman />
           </div>
         </div>
       </section>
@@ -224,13 +304,34 @@ const Index = () => {
   );
 };
 
-const StatTile = ({ label, value, accent }: { label: string; value: string | number; accent?: boolean }) => (
-  <div className="bento p-4 flex flex-col justify-between min-h-[88px]">
-    <span className="small-caps text-[10px] text-muted-foreground">{label}</span>
-    <div className={`display-serif text-3xl md:text-4xl mt-2 leading-none ${accent ? "text-crimson" : "text-foreground"}`}>
-      {value}
+const StatTile = ({
+  label,
+  value,
+  accent,
+  roman,
+}: {
+  label: string;
+  value: string | number;
+  accent?: boolean;
+  roman?: boolean;
+}) => {
+  const numeric = typeof value === "number" ? value : null;
+  const showRoman = roman && numeric !== null && numeric > 0 && numeric < 4000;
+  return (
+    <div className="bento p-4 flex flex-col justify-between min-h-[88px]">
+      <span className="small-caps text-[10px] text-muted-foreground">{label}</span>
+      <div className="mt-2">
+        <div className={`display-serif text-3xl md:text-4xl leading-none ${accent ? "text-crimson" : "text-foreground"}`}>
+          {value}
+        </div>
+        {showRoman && (
+          <div className="mono text-[10px] text-muted-foreground/70 mt-1.5 tracking-wider">
+            {toRoman(numeric!)}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default Index;
