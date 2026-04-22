@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMediaMany, type Note, type MediaAttachment } from "@/lib/db";
-import { Trash2, Image as ImageIcon, Music, Film, Paperclip, Quote } from "lucide-react";
+import { Trash2, Image as ImageIcon, Music, Film, Paperclip } from "lucide-react";
 
 const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 const fmtDate = (t: number) => {
@@ -12,6 +12,18 @@ const fmtTime = (t: number) =>
   new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
 
 const wordCount = (s: string) => (s.trim() ? s.trim().split(/\s+/).length : 0);
+
+const relativeTime = (t: number) => {
+  const diff = Date.now() - t;
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d}d ago`;
+  return `${fmtDate(t)}`;
+};
 
 export const NoteCard = ({
   note,
@@ -55,58 +67,62 @@ export const NoteCard = ({
   return (
     <Link
       to={`/note/${note.id}`}
-      className="group relative block bg-parchment-light/70 border border-ink/40 rounded-[2px] overflow-hidden hover:border-crimson hover:shadow-[0_8px_24px_-8px_hsl(var(--ink)/0.5)] hover:-translate-y-0.5 transition-all duration-200 no-underline"
-      style={{ backgroundImage: "var(--paper-texture)" }}
-      title="Click to open · double-click or middle-click to open in new tab"
+      className="bento group flex flex-col p-0 no-underline animate-fade-up"
+      title="Click to open · middle-click for new tab"
     >
-      {/* Top dateline strip */}
-      <div className="dateline-strip flex items-center justify-between px-3 py-1 text-[10px] uppercase tracking-[0.2em]">
-        <span className="flex items-center gap-1.5">
-          <span className="w-1 h-1 rounded-full bg-gold-pale/80" />
-          {fmtDate(note.updatedAt)} · {fmtTime(note.updatedAt)}
-        </span>
-        <button
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }}
-          className="opacity-60 hover:opacity-100 hover:text-crimson transition"
-          aria-label="Delete scroll"
-        >
-          <Trash2 className="w-3 h-3" />
-        </button>
-      </div>
-
       {preview && (
-        <div className="relative h-28 overflow-hidden border-b border-ink/40">
-          <img src={preview} alt="" className="w-full h-full object-cover sepia-[0.25] contrast-105 dark:sepia-0 dark:grayscale" />
-          <div className="absolute inset-0 bg-gradient-to-t from-parchment-light/60 via-transparent to-transparent" />
+        <div className="relative h-36 overflow-hidden rounded-t-2xl">
+          <img
+            src={preview}
+            alt=""
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />
+          {totalRelics > 1 && (
+            <span className="absolute top-2 right-2 mono text-[10px] px-2 py-0.5 rounded-full bg-background/70 backdrop-blur-md border border-border/60 text-foreground">
+              +{totalRelics - 1}
+            </span>
+          )}
         </div>
       )}
 
-      <div className="p-3 space-y-2">
-        <h3 className="text-base leading-tight text-ink font-semibold line-clamp-2 tracking-wide">
+      <div className="flex flex-col flex-1 p-4 gap-2.5">
+        <div className="flex items-center justify-between text-[10px] mono text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <span className="wax-dot" style={{ width: 6, height: 6, boxShadow: "none" }} />
+            {fmtDate(note.updatedAt)} · {fmtTime(note.updatedAt)}
+          </span>
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(); }}
+            className="opacity-0 group-hover:opacity-100 hover:text-crimson transition-opacity"
+            aria-label="Delete note"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <h3 className="display-serif text-lg leading-snug text-foreground line-clamp-2 text-balance">
           {note.title}
         </h3>
 
         {note.body ? (
-          <div className="relative pl-3 border-l-2 border-crimson/50">
-            <Quote className="absolute -left-1 -top-1 w-2.5 h-2.5 text-crimson bg-parchment-light" />
-            <p className="text-[13px] leading-snug text-ink-faded italic line-clamp-3 body-text">
-              {note.body}
-            </p>
-          </div>
+          <p className="body-text text-[14px] leading-relaxed text-muted-foreground line-clamp-3">
+            {note.body}
+          </p>
         ) : (
-          <p className="text-[12px] italic text-ink-faded/60 body-text">
-            — no inscription —
+          <p className="body-text text-[13px] italic text-muted-foreground/60">
+            no inscription yet
           </p>
         )}
 
-        <div className="flex items-center justify-between pt-1.5 border-t border-dashed border-ink/30 text-[10px] uppercase tracking-[0.15em] text-ink-faded">
-          <span>{wc} {wc === 1 ? "word" : "words"}</span>
+        <div className="mt-auto pt-3 flex items-center justify-between text-[11px] text-muted-foreground border-t border-border/50">
+          <span className="mono">{wc} {wc === 1 ? "word" : "words"} · {relativeTime(note.updatedAt)}</span>
           {totalRelics > 0 && (
-            <span className="flex items-center gap-1.5 text-crimson">
-              {counts.img > 0 && <span className="flex items-center gap-0.5"><ImageIcon className="w-2.5 h-2.5" />{counts.img}</span>}
-              {counts.vid > 0 && <span className="flex items-center gap-0.5"><Film className="w-2.5 h-2.5" />{counts.vid}</span>}
-              {counts.aud > 0 && <span className="flex items-center gap-0.5"><Music className="w-2.5 h-2.5" />{counts.aud}</span>}
-              {counts.other > 0 && <span className="flex items-center gap-0.5"><Paperclip className="w-2.5 h-2.5" />{counts.other}</span>}
+            <span className="flex items-center gap-2 text-crimson/80">
+              {counts.img > 0 && <span className="flex items-center gap-0.5"><ImageIcon className="w-3 h-3" />{counts.img}</span>}
+              {counts.vid > 0 && <span className="flex items-center gap-0.5"><Film className="w-3 h-3" />{counts.vid}</span>}
+              {counts.aud > 0 && <span className="flex items-center gap-0.5"><Music className="w-3 h-3" />{counts.aud}</span>}
+              {counts.other > 0 && <span className="flex items-center gap-0.5"><Paperclip className="w-3 h-3" />{counts.other}</span>}
             </span>
           )}
         </div>
