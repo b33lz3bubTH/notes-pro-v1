@@ -449,6 +449,84 @@
     color: hsl(var(--gold-pale));
   }
 
+  /* === Masthead — newspaper / illuminated bar === */
+  .masthead {
+    position: relative;
+    background:
+      radial-gradient(ellipse at 0% 50%, hsl(var(--gold-pale) / 0.28), transparent 55%),
+      radial-gradient(ellipse at 100% 50%, hsl(var(--crimson) / 0.10), transparent 55%),
+      linear-gradient(180deg, hsl(var(--surface) / 0.96), hsl(var(--surface-2) / 0.94));
+    border: 1px solid hsl(var(--gold-deep) / 0.35);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-md), inset 0 0 0 1px hsl(var(--gold-pale) / 0.18);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+  }
+  .dark .masthead {
+    background:
+      radial-gradient(ellipse at 0% 50%, hsl(var(--gold) / 0.10), transparent 55%),
+      radial-gradient(ellipse at 100% 50%, hsl(var(--crimson) / 0.14), transparent 55%),
+      linear-gradient(180deg, hsl(var(--surface) / 0.88), hsl(var(--surface-2) / 0.85));
+    border-color: hsl(var(--gold) / 0.22);
+  }
+
+  /* Ornate double rule (like manuscript headers) */
+  .double-rule {
+    height: 6px;
+    background:
+      linear-gradient(180deg,
+        transparent 0,
+        transparent 1px,
+        hsl(var(--gold-deep) / 0.6) 1px,
+        hsl(var(--gold-deep) / 0.6) 2px,
+        transparent 2px,
+        transparent 4px,
+        hsl(var(--gold-deep) / 0.4) 4px,
+        hsl(var(--gold-deep) / 0.4) 5px,
+        transparent 5px);
+  }
+
+  /* Pill chip used for filters / sort */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] transition-all;
+    font-family: 'Cinzel', serif;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    background: hsl(var(--surface) / 0.6);
+    border: 1px solid hsl(var(--border));
+    color: hsl(var(--muted-foreground));
+  }
+  .chip:hover { color: hsl(var(--foreground)); border-color: hsl(var(--gold-deep) / 0.5); }
+  .chip-active {
+    background: linear-gradient(180deg, hsl(var(--ink)), hsl(var(--ink) / 0.9));
+    color: hsl(var(--background));
+    border-color: hsl(var(--ink));
+  }
+  .dark .chip-active {
+    background: linear-gradient(180deg, hsl(var(--gold) / 0.95), hsl(var(--gold-deep)));
+    color: hsl(var(--background));
+    border-color: hsl(var(--gold-deep));
+  }
+
+  /* Tiny inline stat chip */
+  .stat-inline {
+    @apply inline-flex items-baseline gap-1.5;
+  }
+  .stat-inline .num {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+  .stat-inline .lbl {
+    font-family: 'Cinzel', serif;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 9px;
+    color: hsl(var(--muted-foreground));
+  }
+
   /* Custom scrollbar — quieter */
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: transparent; }
